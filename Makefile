@@ -6,7 +6,7 @@
 #    By: alelievr <marvin@42.fr>                    +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2014/07/15 15:13:38 by alelievr          #+#    #+#              #
-#    Updated: 2016/12/22 16:19:14 by alelievr         ###   ########.fr        #
+#    Updated: 2016/12/23 19:05:12 by alelievr         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -16,10 +16,14 @@
 
 #	Sources
 SRCDIR		=	src
-SRC			=	main.c			\
+SRC			=	main.c					\
+				printf-test-manager.c	\
 
 #	Objects
 OBJDIR		=	obj
+
+#	Printf library directory
+PRINTFDIR	=	../printf/
 
 #	Variables
 LIBFT		=	2	#1 or 0 to include the libft / 2 for autodetct
@@ -32,7 +36,7 @@ CPPVERSION	=	c++11
 #Example $> make DEBUG=2 will set debuglevel to 2
 
 #	Includes
-INCDIRS		=	.
+INCDIRS		=	inc
 
 #	Libraries
 LIBDIRS		=	
@@ -201,10 +205,18 @@ fclean: clean
 	@$(call color_exec,$(CCLEAN_T),$(CCLEAN),"Fclean:",\
 		$(RM) $(NAME))
 
+printf-manager: $(OBJ)
+	@ar rc printf-test-manager.a $(OBJDIR)/printf-test-manager.o
+
+printf: printf-manager
+	@make -C "$(PRINTFDIR)"
+	@cp "$(PRINTFDIR)"/libftprintf.a .
+	@clang -shared -fPIC -Wl,-all_load libprintf.a printf-tests.a printf-test-manager.a -o ./printf-tests.so
+
 #	All removing then compiling
 re: fclean all
 
-f:	all run
+f:	all printf run
 
 #	Checking norme
 norme:

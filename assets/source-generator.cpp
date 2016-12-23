@@ -5,14 +5,12 @@
 /*                                                    +:+ +:+         +:+     */
 /*   By: alelievr <alelievr@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2016/12/22 16:20:34 by alelievr          #+#    #+#             */
-/*   Updated: 2016/12/23 02:11:46 by alelievr         ###   ########.fr       */
+/*   Created  2016/12/22 16:20:34 by alelievr          #+#    #+#             */
+/*   Updated  2016/12/23 17:41:50 by alelievr         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "source-generator.h"
-
-static int							g_index = 0;
 
 static std::list< intmax_t >		generateRandomNumbers(size_t num, intmax_t mask, bool sup = false)
 {
@@ -69,16 +67,22 @@ static std::map< std::string, std::string > initModMap()
 		{"ll", "(long long)"},
 		{"h", "(short)"},
 		{"hh", "(char)"},
-		{"j", "(long int)"}, //intmax_t to implement
-		{"z", "(unsigned long)"}
+		{"j", "(intmax_t)"},
+		{"z", "(size_t)"},
+		{"lc", "(wint_t)"},
+		{"ls", "(wchar_t *)"},
+		{"lf", "(double)"},
 	};
 }
 
-static const char					*getCastFromModifier(const std::string & mod)
+static const char					*getCastFromModifier(const std::string & mod, const char convertion)
 {
 	const static std::map< std::string, std::string > & modMap = initModMap();
+	std::string											m = const_cast< std::string & >(mod);
 
-	return (modMap.find(mod)->second.c_str());
+	if (strchr("csf", convertion))
+		m += convertion;
+	return (modMap.find(m)->second.c_str());
 }
 
 static void							generateBasicTests(char convertion, std::string arg)
@@ -90,6 +94,7 @@ static void							generateBasicTests(char convertion, std::string arg)
 	const char			*sarg;
 	std::ostringstream	ss;
 	std::string			file(FILE_HEADER_TEMPLATE);
+	int					g_index = 0;
 
 	//with padd
 	//without padd
@@ -131,13 +136,18 @@ static void							generateBasicTests(char convertion, std::string arg)
 				goto abortCurrentFormat;
 		if (align != NOALIGN)
 			fmt += std::to_string(align);
-		if (convertion != 'p' && padd != NOPADD)
+		if (!strchr("pc", convertion) && padd != NOPADD)
 			fmt += "." + std::to_string(padd);
 		fmt += modifier + convertion + sufix;
 		format = fmt.c_str();
 		sarg = arg.c_str();
 //		ss.str("");
-		sprintf(buff, FILE_CONTENT_TEMPLATE, g_index, format, format, getCastFromModifier(modifier), sarg, format, getCastFromModifier(modifier), sarg);
+		sprintf(buff, FILE_CONTENT_TEMPLATE,
+				convertion,
+				g_index,
+				format,
+				format, getCastFromModifier(modifier, convertion), sarg,
+				format, getCastFromModifier(modifier, convertion), sarg);
 		file += buff;
 		g_index++;
 		std::cout << "created test file with format: \"" << fmt << "\"" << std::endl;
@@ -165,8 +175,8 @@ static void							generateTestFiles(void)
 	generateBasicTests('X', randint);
 	randptr = "(void *)0x42";
 	generateBasicTests('p', randptr);
-	generateBasicTests('s', "yolo");
-	generateBasicTests('c', "*");
+	generateBasicTests('s', "\"yolo\"");
+	generateBasicTests('c', "'*'");
 //	generateBasicTests('S', "こんにちは");
 }
 

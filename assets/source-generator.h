@@ -5,8 +5,8 @@
 /*                                                    +:+ +:+         +:+     */
 /*   By: alelievr <alelievr@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2016/12/22 19:07:07 by alelievr          #+#    #+#             */
-/*   Updated: 2016/12/23 01:14:19 by alelievr         ###   ########.fr       */
+/*   Created  2016/12/22 19:07:07 by alelievr          #+#    #+#             */
+/*   Updated  2016/12/23 17:41:49 by alelievr         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -44,8 +44,8 @@
 #define INT_MASK	0x00000000FFFFFFFF
 #define LONG_MASK	0xFFFFFFFFFFFFFFFF
 
-#define FILE_HEADER_TEMPLATE	"extern char *\tg_current_format;\nextern int\t\tft_printf(const char *, ...);\nextern int\t\tprintf(const char *, ...);\nextern void\t\tprintf_diff_error(int, int);\n\n"
-#define FILE_CONTENT_TEMPLATE	"void printf_unit_test_%.7i(void)\n{\n\tint d1, d2;\n\tg_current_format = \"%s\";\n\td1 = ft_printf(\"%s\", %s%s);\n\td2 = printf(\"%s\", %s%s);\n\tif (d1 != d2)\n\t\tprintf_diff_error(d1, d2);\n}\n"
+#define FILE_HEADER_TEMPLATE	"#include <unistd.h>\n#include <stdint.h>\n#include <stddef.h>\n#include <wchar.h>\n\nextern char *\tg_current_format;\nextern int\t\tft_printf(const char *, ...);\nextern int\t\tprintf(const char *, ...);\nextern void\t\tprintf_diff_error(int, int);\n\n"
+#define FILE_CONTENT_TEMPLATE	"void printf_unit_test_%c_%.7i(void)\n{\n\tint d1, d2;\n\tg_current_format = \"%s\";\n\td1 = ft_printf(\"%s\", %s%s);\n\twrite(1, \"\\x99\", 1);\n\td2 = printf(\"%s\", %s%s);\n\tif (d1 != d2)\n\t\tprintf_diff_error(d1, d2);\n}\n"
 
 #define FILE_TEMPLATE			FILE_HEADER_TEMPLATE FILE_CONTENT_TEMPLATE
 

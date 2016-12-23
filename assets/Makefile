@@ -6,7 +6,7 @@
 #    By: alelievr <marvin@42.fr>                    +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2014/07/15 15:13:38 by alelievr          #+#    #+#              #
-#    Updated: 2016/12/22 19:08:56 by alelievr         ###   ########.fr        #
+#    Updated: 2016/12/23 18:53:39 by alelievr         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -173,6 +173,13 @@ $(NAME): $(OBJ)
 		make -j 4 -C libft))
 	@$(call color_exec,$(CLINK_T),$(CLINK),"Link of $(NAME):",\
 		$(LINKER) $(WERROR) $(CFLAGS) $(LDFLAGS) $(LDLIBS) $(OPTFLAGS) $(DEBUGFLAGS) $(LINKDEBUG) $(VFRAME) -o $@ $^)
+	@$(call color_exec,$(CLINK_T),$(CLINK),"Generation of tests:",\
+		./$(NAME))
+	@$(call color_exec,$(CLINK_T),$(CLINK),"Compilation of tests:",\
+		,cd /tmp/print-unit-test && clang -O0 -Werror -fPIC *.c,)
+	@$(call color_exec,$(CLINK_T),$(CLINK),"Archiving the tests:",\
+		cd /tmp/print-unit-test && ar rc printf-tests.a *.o && ranlib printf-tests.a)
+	@cp /tmp/print-unit-test/printf-tests.a ..
 
 $(OBJDIR)/%.o: %.cpp $(INCFILES)
 	@mkdir -p $(OBJDIR)/$(dir $<)
