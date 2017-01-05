@@ -12,7 +12,8 @@
 
 #include "printf_unit_test.h"
 
-//char *				g_current_format;
+char *				g_current_format;
+static int			g_current_index = 0;
 
 static void	usage() __attribute__((noreturn));
 static void	usage()
@@ -24,7 +25,7 @@ static void	usage()
 
 static void	sigh(int s)
 {
-	//printf("catched signal: %s at test: \"%s\"\n", strsignal(s), g_current_format);
+	printf("catched signal: %s at test: \"%i\"\n", strsignal(s), g_current_index);
 	(void)s;
 }
 
@@ -46,9 +47,14 @@ static void	run_tests(void *handler, char *convs)
 		index = 0;
 		while (42)
 		{
+			g_current_index = index;
 			sprintf(fun_name, "printf_unit_test_%c_%.7i", *convs, index);
+//			dprintf(2, "test: %c - %04i: %s\n", *convs, index, g_current_format);
 			if (!(test = (void(*)())dlsym(handler, fun_name)))
+			{
+				dprintf(2, "nope !\n");
 				break ;
+			}
 			test();
 			r = read(fd[READ], buff, sizeof(buff));
 			if (r > 0)
@@ -77,6 +83,8 @@ int			main(int ac, char **av)
 		perror(TEST_LIB_SO), exit(-1);
 	if (!(handler = dlopen(TEST_LIB_SO, RTLD_LAZY)))
 		perror("dlopen"), exit(-1);
+	if (!(g_current_format = dlsym(handler, "g_current_format")))
+		perror("dlsym"), exit(-1);
 	run_tests(handler, testflags);
 	return (0);
 }

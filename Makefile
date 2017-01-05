@@ -6,7 +6,7 @@
 #    By: alelievr <marvin@42.fr>                    +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2014/07/15 15:13:38 by alelievr          #+#    #+#              #
-#    Updated: 2016/12/23 19:05:12 by alelievr         ###   ########.fr        #
+#    Updated: 2017/01/05 19:28:51 by alelievr         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -42,8 +42,14 @@ INCDIRS		=	inc
 LIBDIRS		=	
 LDLIBS		=	
 
+#	Spec
+FINAL_PRINTF_LIB	= printf-tests.so
+PRINTF_MANAGER_LIB	= printf-test-manager.a
+PRINTF_TEST_SLIB	= printf-tests.a
+
 #	Output
 NAME		=	run_test
+LIB_FTPRINTF	=	libftprintf.a
 
 #	Compiler
 WERROR		=	-Werror
@@ -205,14 +211,19 @@ fclean: clean
 	@$(call color_exec,$(CCLEAN_T),$(CCLEAN),"Fclean:",\
 		$(RM) $(NAME))
 
-printf-manager: $(OBJ)
-	@ar rc printf-test-manager.a $(OBJDIR)/printf-test-manager.o
+$(PRINTF_MANAGER_LIB): $(OBJ)
+	@$(call color_exec,$(CCLEAN_T),$(CCLEAN),"Lib:",\
+		ar rc $(PRINTF_MANAGER_LIB) $(OBJDIR)/printf-test-manager.o)
 
-printf: printf-manager
+$(FINAL_PRINTF_LIB): $(PRINTF_MANAGER_LIB)
 	@make -C "$(PRINTFDIR)"
-	@cp "$(PRINTFDIR)"/libftprintf.a .
-	@clang -shared -fPIC -Wl,-all_load libprintf.a printf-tests.a printf-test-manager.a -o ./printf-tests.so
+	@cp "$(PRINTFDIR)"/$(LIB_FTPRINTF) .
+	@echo "Creating final so lib"
+	@$(call color_exec,$(CLINK_T),$(CLINK),"Final lib:",\
+		clang -shared -fPIC -Wl\\x2c-all_load $(LIB_FTPRINTF) $(PRINTF_TEST_SLIB) $(PRINTF_MANAGER_LIB) -o $(FINAL_PRINTF_LIB))
 
+printf: $(FINAL_PRINTF_LIB)
+	
 #	All removing then compiling
 re: fclean all
 

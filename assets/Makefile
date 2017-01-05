@@ -6,7 +6,7 @@
 #    By: alelievr <marvin@42.fr>                    +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2014/07/15 15:13:38 by alelievr          #+#    #+#              #
-#    Updated: 2016/12/23 18:53:39 by alelievr         ###   ########.fr        #
+#    Updated: 2016/12/29 17:13:37 by alelievr         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -39,7 +39,8 @@ LIBDIRS		=
 LDLIBS		=	
 
 #	Output
-NAME		=	src_gen
+NAME		=	printf-tests.a
+EXENAME		=	src_gen
 
 #	Compiler
 WERROR		=	-Werror
@@ -167,18 +168,20 @@ endif
 #	First target
 all: $(NAME)
 
-#	Linking
-$(NAME): $(OBJ)
+$(SRC_GEN):
 	@$(if $(findstring lft,$(LDLIBS)),$(call color_exec_t,$(CCLEAR),$(CCLEAR),\
 		make -j 4 -C libft))
 	@$(call color_exec,$(CLINK_T),$(CLINK),"Link of $(NAME):",\
 		$(LINKER) $(WERROR) $(CFLAGS) $(LDFLAGS) $(LDLIBS) $(OPTFLAGS) $(DEBUGFLAGS) $(LINKDEBUG) $(VFRAME) -o $@ $^)
 	@$(call color_exec,$(CLINK_T),$(CLINK),"Generation of tests:",\
 		./$(NAME))
+
+#	Linking
+$(NAME): $(SRC_GEN) $(OBJ)
 	@$(call color_exec,$(CLINK_T),$(CLINK),"Compilation of tests:",\
-		,cd /tmp/print-unit-test && clang -O0 -Werror -fPIC *.c,)
+		clang -c -O0 -Werror -fPIC /tmp/print-unit-test/*.c,)
 	@$(call color_exec,$(CLINK_T),$(CLINK),"Archiving the tests:",\
-		cd /tmp/print-unit-test && ar rc printf-tests.a *.o && ranlib printf-tests.a)
+		ar rc $(NAME) *.o && ranlib $(NAME) && rm -f *.o)
 	@cp /tmp/print-unit-test/printf-tests.a ..
 
 $(OBJDIR)/%.o: %.cpp $(INCFILES)
