@@ -41,6 +41,22 @@ static std::list< std::string >		generateRandomStrings(size_t num)
 	return strs;
 }
 
+static std::list< std::string >			generateRandomChars(size_t num)
+{
+	std::list< std::string >	chars;
+	char						r;
+
+	chars.push_back("\\0");
+
+	while (chars.size() != num)
+	{
+		r = static_cast< char >(rand());
+		if (isprint(r))
+			chars.push_back(std::string("") + r);
+	}
+	return chars;
+}
+
 static std::list< std::string >		generateModifiers(char convertion)
 {
 	std::list< std::string >		mods;
@@ -85,6 +101,23 @@ static const char					*getCastFromModifier(const std::string & mod, const char c
 	return (modMap.find(m)->second.c_str());
 }
 
+static std::string					generateUniqueFileNmae(char convertion)
+{
+	std::stringstream		ss;
+
+	for (int i = 0; i < 99; i++)
+	{
+		ss << OUT_FOLDER << "printf_unit_test_" << convertion << "-" << i << ".c";
+		if (access(ss.str().c_str(), F_OK) == 0)
+		{
+			ss.str("");
+			continue ;
+		}
+		break ;
+	}
+	return ss.str();
+}
+
 static void							generateBasicTests(char convertion, std::string arg)
 {
 	char				buff[0xF00];
@@ -92,9 +125,11 @@ static void							generateBasicTests(char convertion, std::string arg)
 	std::string			fmt;
 	const char			*format;
 	const char			*sarg;
-	std::ostringstream	ss;
+	std::string			file_name;
 	std::string			file(FILE_HEADER_TEMPLATE);
 	int					g_index = 0;
+
+	std::cout << "generating tests for convertion: " << convertion << " with arg: " << arg << std::endl;
 
 	//with padd
 	//without padd
@@ -112,8 +147,8 @@ static void							generateBasicTests(char convertion, std::string arg)
 	for (const char & c3 : PRINTF_FLAGS_BASIC) //...
 	for (const char & c4 : PRINTF_FLAGS_BASIC)
 	for (const char & c5 : PRINTF_FLAGS_BASIC)
-	for (const intmax_t & align : generateRandomNumbers(2, CHAR_MASK, true)) //align attribute
-	for (const intmax_t & padd : generateRandomNumbers(2, CHAR_MASK, true)) //padding attribute
+	for (const intmax_t & align : generateRandomNumbers(4, 0x3F, true)) //align attribute
+	for (const intmax_t & padd : generateRandomNumbers(4, 0x3F, true)) //padding attribute
 	for (const std::string & modifier : generateModifiers(convertion))
 	for (const std::string & prefix : generateRandomStrings(1)) //additional string to format
 	for (const std::string & sufix : generateRandomStrings(1)) //additional string to format
@@ -150,12 +185,12 @@ static void							generateBasicTests(char convertion, std::string arg)
 				format, getCastFromModifier(modifier, convertion), sarg);
 		file += buff;
 		g_index++;
-		std::cout << "created test file with format: \"" << fmt << "\"" << std::endl;
+		//std::cout << "created test file with format: \"" << fmt << "\"" << std::endl;
 		abortCurrentFormat:
 		;
 	}
-	ss << OUT_FOLDER << "printf_unit_test_" << convertion << ".c";
-	ofs.open(ss.str(), std::ofstream::out | std::ofstream::trunc | std::ofstream::in);
+	file_name = generateUniqueFileNmae(convertion);
+	ofs.open(file_name, std::ofstream::out | std::ofstream::trunc | std::ofstream::in);
 	ofs << file;
 	ofs.close();
 }
@@ -165,18 +200,18 @@ static void							generateTestFiles(void)
 	std::string		randint;
 	std::string		randptr;
 
-	randint = std::to_string(rand());
-	generateBasicTests('d', randint);
-	randint = std::to_string(rand());
-	generateBasicTests('o', randint);
-	randint = std::to_string(rand());
-	generateBasicTests('u', randint);
-	randint = std::to_string(rand());
-	generateBasicTests('X', randint);
-	randptr = "(void *)0x42";
-	generateBasicTests('p', randptr);
-	generateBasicTests('s', "\"yolo\"");
-	generateBasicTests('c', "'*'");
+	for (char c : {'d', 'i', 'o', 'u', 'x', 'X', 'D', 'O', 'U'})
+		for (int r : {0, rand(), rand(), rand(), -rand(), -rand()})
+		{
+			randint = std::to_string(r);
+			generateBasicTests(c, randint);
+		}
+	for (const char * s : {"(void *)0x42", "(void *)0x7fff9532", "(void *)0x0"})
+		generateBasicTests('p', s);
+	for (std::string s : generateRandomStrings(5))
+		generateBasicTests('s', "\"" + s + "\"");
+	for (std::string c : generateRandomChars(5))
+		generateBasicTests('c', "'" + c + "'");
 //	generateBasicTests('S', "こんにちは");
 }
 

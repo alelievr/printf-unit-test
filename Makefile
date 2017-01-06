@@ -6,7 +6,7 @@
 #    By: alelievr <marvin@42.fr>                    +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2014/07/15 15:13:38 by alelievr          #+#    #+#              #
-#    Updated: 2017/01/05 19:28:51 by alelievr         ###   ########.fr        #
+#    Updated: 2017/01/06 19:00:42 by alelievr         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -215,7 +215,12 @@ $(PRINTF_MANAGER_LIB): $(OBJ)
 	@$(call color_exec,$(CCLEAN_T),$(CCLEAN),"Lib:",\
 		ar rc $(PRINTF_MANAGER_LIB) $(OBJDIR)/printf-test-manager.o)
 
-$(FINAL_PRINTF_LIB): $(PRINTF_MANAGER_LIB)
+$(PRINTF_TEST_SLIB):
+	@make -C assets
+	@cp assets/$(PRINTF_TEST_SLIB) .
+
+
+$(FINAL_PRINTF_LIB): $(PRINTF_TEST_SLIB) $(PRINTF_MANAGER_LIB)
 	@make -C "$(PRINTFDIR)"
 	@cp "$(PRINTFDIR)"/$(LIB_FTPRINTF) .
 	@echo "Creating final so lib"

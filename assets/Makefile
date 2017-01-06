@@ -6,7 +6,7 @@
 #    By: alelievr <marvin@42.fr>                    +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2014/07/15 15:13:38 by alelievr          #+#    #+#              #
-#    Updated: 2016/12/29 17:13:37 by alelievr         ###   ########.fr        #
+#    Updated: 2017/01/07 00:04:58 by alelievr         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -110,14 +110,15 @@ INCFILES	=	$(foreach inc, $(INCDIRS), $(wildcard $(inc)/*.h))
 CPPFLAGS	=	$(addprefix -I,$(INCDIRS))
 LDFLAGS		=	$(addprefix -L,$(LIBDIRS))
 LINKER		=	$(CC)
+TMPDIR		=	/tmp/print-unit-test
 
 disp_indent	=	for I in `seq 1 $(MAKELEVEL)`; do \
 					test "$(MAKELEVEL)" '!=' '0' && printf "\t"; \
 				done
 color_exec	=	$(call disp_indent); \
-				echo $(1)➤ $(3)$(2)"\n"$(strip $(4))$(CCLEAR);$(4)
+				echo $(1)➤ $(3)$(2)"\n"'$(strip $(4))'$(CCLEAR);$(4)
 color_exec_t=	$(call disp_indent); \
-				echo $(1)➤ $(strip $(3))$(2)$(CCLEAR);$(3)
+				echo $(1)➤ '$(strip $(3))'$(2)$(CCLEAR);$(3)
 
 ifneq ($(filter 1,$(strip $(DEBUGLEVEL)) ${DEBUG}),)
 	OPTLEVEL = 0
@@ -168,21 +169,21 @@ endif
 #	First target
 all: $(NAME)
 
-$(SRC_GEN):
+$(EXENAME): $(OBJ)
 	@$(if $(findstring lft,$(LDLIBS)),$(call color_exec_t,$(CCLEAR),$(CCLEAR),\
 		make -j 4 -C libft))
 	@$(call color_exec,$(CLINK_T),$(CLINK),"Link of $(NAME):",\
 		$(LINKER) $(WERROR) $(CFLAGS) $(LDFLAGS) $(LDLIBS) $(OPTFLAGS) $(DEBUGFLAGS) $(LINKDEBUG) $(VFRAME) -o $@ $^)
-	@$(call color_exec,$(CLINK_T),$(CLINK),"Generation of tests:",\
-		./$(NAME))
 
 #	Linking
-$(NAME): $(SRC_GEN) $(OBJ)
+$(NAME): $(EXENAME)
+#	@$(call color_exec,$(CLINK_T),$(CLINK),"Generation of tests:",\
+		./$(EXENAME))
 	@$(call color_exec,$(CLINK_T),$(CLINK),"Compilation of tests:",\
-		clang -c -O0 -Werror -fPIC /tmp/print-unit-test/*.c,)
+		cd $(TMPDIR) && clang -c -O0 -Werror *.c)
 	@$(call color_exec,$(CLINK_T),$(CLINK),"Archiving the tests:",\
-		ar rc $(NAME) *.o && ranlib $(NAME) && rm -f *.o)
-	@cp /tmp/print-unit-test/printf-tests.a ..
+		cd $(TMPDIR) && ar rc $(NAME) *.o && ranlib $(NAME) && rm -f *.o)
+	@cp $(TMPDIR)/printf-tests.a ..
 
 $(OBJDIR)/%.o: %.cpp $(INCFILES)
 	@mkdir -p $(OBJDIR)/$(dir $<)
@@ -205,11 +206,13 @@ clean:
 	@$(call color_exec,$(CCLEAN_T),$(CCLEAN),"Clean:",\
 		$(RM) $(OBJ))
 	@rm -rf $(OBJDIR)
+	@rm -f $(NAME)
 
 #	Removing objects and exe
 fclean: clean
 	@$(call color_exec,$(CCLEAN_T),$(CCLEAN),"Fclean:",\
 		$(RM) $(NAME))
+	@rm -f $(EXENAME)
 
 #	All removing then compiling
 re: fclean all
@@ -219,10 +222,6 @@ f:	all run
 #	Checking norme
 norme:
 	@norminette $(NORME) | sed "s/Norme/[38;5;$(CNORM_T)➤ [38;5;$(CNORM_OK)Norme/g;s/Warning/[0;$(CNORM_WARN)Warning/g;s/Error/[0;$(CNORM_ERR)Error/g"
-
-run: $(NAME)
-	@echo $(CRUN_T)"➤ "$(CRUN)"./$(NAME) ${ARGS}\033[0m"
-	@./$(NAME) ${ARGS}
 
 codesize:
 	@cat $(NORME) |grep -v '/\*' |wc -l

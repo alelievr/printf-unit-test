@@ -11,6 +11,7 @@
 /* ************************************************************************** */
 
 #include "printf_unit_test.h"
+#include <fcntl.h>
 
 char *				g_current_format;
 static int			g_current_index = 0;
@@ -34,41 +35,47 @@ static void	run_tests(void *handler, char *convs)
 	char		fun_name[0xF00];
 	char		buff[0xF00];
 	int			fd[2];
-	void		(*test)(void);
+	void		(*test)(char *);
 	int			index;
 	long		r;
+	int			test_id = 0;
+	int			new_stdout;
 
 	if (*convs)
 		printf("Starting tests ...\n");
-	dup2(fd[WRITE], 1);
+	if (pipe(fd) != 0)
+		perror("pipe"), exit(-1);
+	dup2(fd[WRITE], STDOUT_FILENO);
 	close(fd[WRITE]);
+	new_stdout = open("/dev/tty", O_RDWR);
 	while (*convs)
 	{
+		printf("testing %%%c ...\n", *convs);
 		index = 0;
 		while (42)
 		{
 			g_current_index = index;
 			sprintf(fun_name, "printf_unit_test_%c_%.7i", *convs, index);
-//			dprintf(2, "test: %c - %04i: %s\n", *convs, index, g_current_format);
 			if (!(test = (void(*)())dlsym(handler, fun_name)))
-			{
-				dprintf(2, "nope !\n");
 				break ;
-			}
-			test();
+			test(g_current_format);
+			fflush(stdout);
 			r = read(fd[READ], buff, sizeof(buff));
 			if (r > 0)
 			{
 				//split and  diff the results
 			}
 			index++;
+			test_id++;
 		}
 		convs++;
 	}
+	dprintf(new_stdout, "total format tested: %i\n", test_id);
 }
 
 int			main(int ac, char **av)
 {
+	static char		buff[0xF00];
 	void	*handler;
 	char	*testflags = SUPPORTED_CONVERTERS;
 
@@ -83,8 +90,7 @@ int			main(int ac, char **av)
 		perror(TEST_LIB_SO), exit(-1);
 	if (!(handler = dlopen(TEST_LIB_SO, RTLD_LAZY)))
 		perror("dlopen"), exit(-1);
-	if (!(g_current_format = dlsym(handler, "g_current_format")))
-		perror("dlsym"), exit(-1);
+	g_current_format = buff;
 	run_tests(handler, testflags);
 	return (0);
 }
