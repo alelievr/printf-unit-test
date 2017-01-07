@@ -6,7 +6,7 @@
 #    By: alelievr <marvin@42.fr>                    +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2014/07/15 15:13:38 by alelievr          #+#    #+#              #
-#    Updated: 2017/01/06 19:00:42 by alelievr         ###   ########.fr        #
+#    Updated: 2017/01/07 01:20:46 by alelievr         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -215,10 +215,21 @@ $(PRINTF_MANAGER_LIB): $(OBJ)
 	@$(call color_exec,$(CCLEAN_T),$(CCLEAN),"Lib:",\
 		ar rc $(PRINTF_MANAGER_LIB) $(OBJDIR)/printf-test-manager.o)
 
-$(PRINTF_TEST_SLIB):
-	@make -C assets
-	@cp assets/$(PRINTF_TEST_SLIB) .
+WGET	:= $(shell wget --version 2>/dev/null)
+CURL	:= $(shell curl --version 2>/dev/null)
 
+#TODO: download the test library instead of building it
+#TODO: put print_slib in ~/goinfre/printf-tests
+$(PRINTF_TEST_SLIB):
+ifdef WGET
+	DL=wget
+else
+ifdef CURL
+	DL=curl
+endif
+	${DL} -o $(PRINTF_TEST_SLIB) $(REMOTE_PRINTF_SLIB)
+#	@make -C assets
+#	@cp assets/$(PRINTF_TEST_SLIB) .
 
 $(FINAL_PRINTF_LIB): $(PRINTF_TEST_SLIB) $(PRINTF_MANAGER_LIB)
 	@make -C "$(PRINTFDIR)"

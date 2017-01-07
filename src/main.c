@@ -73,6 +73,7 @@ static void	run_tests(void *handler, char *convs)
 	dprintf(new_stdout, "total format tested: %i\n", test_id);
 }
 
+//TODO: turn libftprintf.a into .so, load it and send ft_printf's symbol to the tests. (+ a parameter to return the two printf's returns)
 int			main(int ac, char **av)
 {
 	static char		buff[0xF00];
