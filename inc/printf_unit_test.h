@@ -6,7 +6,7 @@
 /*   By: alelievr <alelievr@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2016/12/23 17:46:11 by alelievr          #+#    #+#             */
-/*   Updated: 2017/01/08 17:34:54 by alelievr         ###   ########.fr       */
+/*   Updated: 2017/01/08 18:28:56 by alelievr         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,6 +19,8 @@
 #include <unistd.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
+#include <pthread.h>
 
 #define SUPPORTED_CONVERTERS	"idDoOuUxXcCsSp"
 #define TEST_LIB_SO				"./printf-tests.so"

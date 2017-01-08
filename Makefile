@@ -6,7 +6,7 @@
 #    By: alelievr <marvin@42.fr>                    +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2014/07/15 15:13:38 by alelievr          #+#    #+#              #
-#    Updated: 2017/01/08 17:18:09 by alelievr         ###   ########.fr        #
+#    Updated: 2017/01/08 18:46:28 by alelievr         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -44,7 +44,6 @@ LDLIBS		=
 
 #	Spec
 FINAL_PRINTF_LIB	= printf-tests.so
-PRINTF_TEST_SLIB	= printf-tests.a
 
 ASSETS_DIR			=	assets
 TMP_LIB_FTPRINTF	=	$(ASSETS_DIR)/tmp
@@ -214,28 +213,10 @@ fclean: clean
 	@$(call color_exec,$(CCLEAN_T),$(CCLEAN),"Fclean:",\
 		$(RM) $(NAME))
 
-WGET	:= $(shell wget --version 2>/dev/null)
-CURL	:= $(shell curl --version 2>/dev/null)
-
-#TODO: download the test library instead of building it
-#TODO: put print_slib in ~/goinfre/printf-tests
-$(PRINTF_TEST_SLIB):
-ifdef WGET
-	DL=wget
-else
-ifdef CURL
-	DL=curl
-endif
-endif
-ifdef DL
-	${DL} -o $(PRINTF_TEST_SLIB) $(REMOTE_PRINTF_SLIB)
-endif
-#	@make -C assets
-#	@cp assets/$(PRINTF_TEST_SLIB) .
-
-$(LIB_FTPRINTF_SO): $(PRINTF_TEST_SLIB)
+$(LIB_FTPRINTF_SO):
 	@make -C "$(PRINTFDIR)"
 	@cp "$(PRINTFDIR)"/$(LIB_FTPRINTF) $(ASSETS_DIR)
+	@rm -rf $(TMP_LIB_FTPRINTF)
 	@mkdir -p $(TMP_LIB_FTPRINTF)
 	@$(call color_exec,$(CLINK_T),$(CLINK),"Creating libftprintf.so lib",\
 		cd $(TMP_LIB_FTPRINTF) && ar -xv ../$(LIB_FTPRINTF) >/dev/null && $(CC) -shared -fPIC *.o -o $(LIB_FTPRINTF_SO) && cp $(LIB_FTPRINTF_SO) ../..)

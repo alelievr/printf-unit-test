@@ -19,6 +19,7 @@ static int			g_current_index = 0;
 static int			g_failed_tests = 0;
 static int			g_passed_tests = 0;
 static long long	g_current_arg;
+static long			last_time_update;
 
 static void	usage() __attribute__((noreturn));
 static void	usage()
@@ -43,20 +44,26 @@ static void	cout(const char *f, ...)
 
 static void	sigh(int s)
 {
-	cout(C_CRASH"catched signal: %s at test \"%i\", current format: \"%s\"\n", strsignal(s), g_current_index, g_current_format);
+	cout(C_CRASH"catched signal: %s when testing format: \"%s\" with arg: \n", strsignal(s), g_current_index, g_current_format, g_current_arg);
 	(void)s;
 }
 
-static void run_test(void (*testf)(char *b, int (*)(), int *, int *, long long), int (*ft_printf)(), int fd[2], long long arg)
+static void run_test(void (*testf)(char *b, int (*)(), int *, long long, int), int (*ft_printf)(), int fd[2], long long arg)
 {
 	char		buff[0xF00];
 	char		printf_buff[0xF00];
 	char		ftprintf_buff[0xF00];
 	long		r;
 	int			d1, d2; //d1 is the printf return and d2 ft_printf return.
+	clock_t		b, m, e;
 
 	g_current_arg = arg;
-	testf(g_current_format, ft_printf, &d1, &d2, arg);
+	b = clock();
+	testf(g_current_format, ft_printf, &d1, arg, 0);
+	m = clock();
+	last_time_update = time(NULL); //for timeout
+	testf(g_current_format, ft_printf, &d2, arg, 1);
+	e = clock();
 	fflush(stdout);
 	if (d1 != d2)
 	{
@@ -110,10 +117,11 @@ static void	run_tests(void *tests_h, int (*ft_printf)(), char *convs)
 	{
 		old_failed_tests = g_failed_tests;
 		cout(C_TITLE"testing %%%c ...\n"C_CLEAR, *convs);
-		index = 0;
+		index = -1;
 		test_count = 0;
 		while (42)
 		{
+			index++;
 			g_current_index = index;
 			sprintf(fun_name, "printf_unit_test_%c_%.9i", *convs, index);
 			if (!(test = (void(*)())dlsym(tests_h, fun_name)))
@@ -125,7 +133,6 @@ static void	run_tests(void *tests_h, int (*ft_printf)(), char *convs)
 				total_test_count++;
 				test_count++;
 			}
-			index++;
 		}
 		if (g_failed_tests == old_failed_tests)
 			cout(C_PASS"Passed all %'i tests for convertion %c\n"C_CLEAR, test_count, *convs);
@@ -142,7 +149,23 @@ static void	ask_download_tests(void)
 
 	printf("main test library was not found, do you want to download it ? (y/n)");
 	if ((c = (char)getchar()) == 'y' || c == 'Y' || c == '\n')
-		;
+		system("curl -o printf-tests.so https://raw.githubusercontent.com/alelievr/printf-unit-test-libs/master/printf-tests.so?token=AGjy4wBye2wxE6bLiGPFtzg4B5W0wT-Bks5Ye7RLwA%3D%3D");
+	else
+		exit(0);
+}
+
+static void	*timeout_thread(void *t)
+{
+	(void)t;
+	while (42)
+	{
+		sleep(1);
+		if (time(NULL) - last_time_update > 3) //3sec passed on ftprintf function
+		{
+			cout(C_ERROR"Timeout on format: \"%s\" with argument: %lli\n", g_current_format, g_current_arg);
+			exit(0);
+		}
+	}
 }
 
 int			main(int ac, char **av)
@@ -152,6 +175,7 @@ int			main(int ac, char **av)
 	void			*ftprintf_handler;
 	char			*testflags = SUPPORTED_CONVERTERS;
 	int				(*ft_printf)();
+	pthread_t		p;
 
 	if (ac > 2)
 		usage();
@@ -161,8 +185,6 @@ int			main(int ac, char **av)
 	signal(SIGBUS, sigh);
 	signal(SIGPIPE, sigh);
 	if (access(TEST_LIB_SO, F_OK))
-		perror(TEST_LIB_SO), exit(-1);
-	if (access(TEST_LIB_SO, F_OK | X_OK))
 		ask_download_tests();
 	if (!(tests_handler = dlopen(TEST_LIB_SO, RTLD_LAZY)))
 		perror("dlopen"), exit(-1);
@@ -171,6 +193,8 @@ int			main(int ac, char **av)
 	if (!(ft_printf = (int (*)())dlsym(ftprintf_handler, "ft_printf")))
 		perror("dlsym"), exit(-1);
 	g_current_format = buff;
+	if ((pthread_create(&p, NULL, timeout_thread, NULL)) == -1)
+		puts(C_ERROR"thread init failed"), exit(-1);
 	run_tests(tests_handler, ft_printf, testflags);
 	return (0);
 }
