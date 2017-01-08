@@ -23,6 +23,8 @@
 #include <limits.h>
 #include <sys/stat.h>
 #include <unistd.h>
+#include <dirent.h>
+#include <fcntl.h>
 
 #include <iostream>
 #include <sstream>
@@ -34,6 +36,7 @@
 #include <map>
 
 #define	OUT_FOLDER				"/tmp/print-unit-test/"
+#define LOCK_FILE				".source-generator.lock"
 #define NO_FLAG					"\x98"
 #define PRINTF_FLAGS_BASIC		NO_FLAG"#0-+ "
 #define NOALIGN					INT_MIN
@@ -45,8 +48,8 @@
 #define INT_MASK	0x00000000FFFFFFFF
 #define LONG_MASK	0xFFFFFFFFFFFFFFFF
 
-#define FILE_HEADER_TEMPLATE	"#include <string.h>\n#include <unistd.h>\n#include <stdint.h>\n#include <stddef.h>\n#include <wchar.h>\n\nextern int\t\tft_printf(const char *, ...);\nextern int\t\tprintf(const char *, ...);\nextern void\t\tprintf_diff_error(int, int);\n\n"
-#define FILE_CONTENT_TEMPLATE	"void printf_unit_test_%c_%.7i(char *b)\n{\n\tint d1, d2;\n\tstrcpy(b, \"%s\");\n\td1 = ft_printf(\"%s\", %s%s);\n\twrite(1, \"\\x99\", 1);\n\td2 = printf(\"%s\", %s%s);\n\tif (d1 != d2)\n\t\tprintf_diff_error(d1, d2);\n}\n"
+#define FILE_HEADER_TEMPLATE	"#include <math.h>\n#include <float.h>\n#include <string.h>\n#include <unistd.h>\n#include <stdint.h>\n#include <stddef.h>\n#include <wchar.h>\n\nextern int\t\tprintf(const char *, ...);\n"
+#define FILE_CONTENT_TEMPLATE	"void printf_unit_test_%c_%.9i(char *b, int (*ft_printf)(const char *, ...), int *r1, int *r2)\n{\n\tstrcpy(b, \"%s\");\n\t*r1 = printf(\"%s\", %s%s);\n\tfflush(stdout);\n\twrite(1, \"\\x99\", 1);\n\t*r2 = ft_printf(\"%s\", %s%s);\n}\n\n"
 
 #define FILE_TEMPLATE			FILE_HEADER_TEMPLATE FILE_CONTENT_TEMPLATE
 

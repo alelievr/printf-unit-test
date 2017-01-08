@@ -4,5 +4,6 @@
 *~
 obj/
 a.out
+assets/tmp
 run_test
 src_gen

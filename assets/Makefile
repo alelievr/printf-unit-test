@@ -6,7 +6,7 @@
 #    By: alelievr <marvin@42.fr>                    +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2014/07/15 15:13:38 by alelievr          #+#    #+#              #
-#    Updated: 2017/01/07 00:04:58 by alelievr         ###   ########.fr        #
+#    Updated: 2017/01/08 02:09:33 by alelievr         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -39,7 +39,7 @@ LIBDIRS		=
 LDLIBS		=	
 
 #	Output
-NAME		=	printf-tests.a
+NAME		=	printf-tests.so
 EXENAME		=	src_gen
 
 #	Compiler
@@ -80,15 +80,15 @@ CNORM_OK	=	"231m"
 
 OS			:=	$(shell uname -s)
 PROC		:=	$(shell uname -p)
-DEBUGFLAGS	=	""
-LINKDEBUG	=	""
-OPTFLAGS	=	""
-#COMPILATION	=	""
+DEBUGFLAGS	=	
+LINKDEBUG	=	
+OPTFLAGS	=	
+#COMPILATION	=	
 
 ifeq "$(OS)" "Windows_NT"
 endif
 ifeq "$(OS)" "Linux"
-	LDLIBS		+= ""
+	LDLIBS		+= 
 	DEBUGFLAGS	+= " -fsanitize=memory -fsanitize-memory-use-after-dtor -fsanitize=thread"
 endif
 ifeq "$(OS)" "Darwin"
@@ -134,11 +134,11 @@ ifneq ($(filter 2,$(strip $(DEBUGLEVEL)) ${DEBUG}),)
 endif
 
 ifneq ($(filter 1,$(strip $(OPTLEVEL)) ${OPTI}),)
-	DEBUGFLAGS = ""
+	DEBUGFLAGS = 
 	OPTFLAGS = $(OPTFLAGS1)
 endif
 ifneq ($(filter 2,$(strip $(OPTLEVEL)) ${OPTI}),)
-	DEBUGFLAGS = ""
+	DEBUGFLAGS = 
 	OPTFLAGS = $(OPTFLAGS1) $(OPTFLAGS2)
 endif
 
@@ -151,7 +151,7 @@ ifneq ($(filter %.cpp,$(SRC)),)
 endif
 
 ifdef ${NOWERROR}
-	WERROR = ""
+	WERROR = 
 endif
 
 ifeq "$(strip $(LIBFT))" "2"
@@ -177,13 +177,13 @@ $(EXENAME): $(OBJ)
 
 #	Linking
 $(NAME): $(EXENAME)
-#	@$(call color_exec,$(CLINK_T),$(CLINK),"Generation of tests:",\
-		./$(EXENAME))
+	@$(call color_exec,$(CLINK_T),$(CLINK),"Generation of tests:",\
+		./$(EXENAME) "dDioOuUxXpsScCeEfFgGaA")
+	@mkdir -p $(TMPDIR)
 	@$(call color_exec,$(CLINK_T),$(CLINK),"Compilation of tests:",\
-		cd $(TMPDIR) && clang -c -O0 -Werror *.c)
+		cd $(TMPDIR) && clang -c -fPIC -O0 -Werror *.c)
 	@$(call color_exec,$(CLINK_T),$(CLINK),"Archiving the tests:",\
-		cd $(TMPDIR) && ar rc $(NAME) *.o && ranlib $(NAME) && rm -f *.o)
-	@cp $(TMPDIR)/printf-tests.a ..
+		cd $(TMPDIR) && $(CC) -shared -fPIC *.o -o $(NAME) && rm -f *.o)
 
 $(OBJDIR)/%.o: %.cpp $(INCFILES)
 	@mkdir -p $(OBJDIR)/$(dir $<)

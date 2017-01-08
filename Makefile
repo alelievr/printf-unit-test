@@ -6,7 +6,7 @@
 #    By: alelievr <marvin@42.fr>                    +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2014/07/15 15:13:38 by alelievr          #+#    #+#              #
-#    Updated: 2017/01/07 01:20:46 by alelievr         ###   ########.fr        #
+#    Updated: 2017/01/07 13:04:12 by alelievr         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -17,13 +17,12 @@
 #	Sources
 SRCDIR		=	src
 SRC			=	main.c					\
-				printf-test-manager.c	\
 
 #	Objects
 OBJDIR		=	obj
 
 #	Printf library directory
-PRINTFDIR	=	../printf/
+PRINTFDIR	=	../ft_printf/
 
 #	Variables
 LIBFT		=	2	#1 or 0 to include the libft / 2 for autodetct
@@ -44,12 +43,15 @@ LDLIBS		=
 
 #	Spec
 FINAL_PRINTF_LIB	= printf-tests.so
-PRINTF_MANAGER_LIB	= printf-test-manager.a
 PRINTF_TEST_SLIB	= printf-tests.a
+
+ASSETS_DIR			=	assets
+TMP_LIB_FTPRINTF	=	$(ASSETS_DIR)/tmp
+LIB_FTPRINTF_SO		=	libftprintf.so
 
 #	Output
 NAME		=	run_test
-LIB_FTPRINTF	=	libftprintf.a
+LIB_FTPRINTF=	libftprintf.a
 
 #	Compiler
 WERROR		=	-Werror
@@ -89,15 +91,15 @@ CNORM_OK	=	"231m"
 
 OS			:=	$(shell uname -s)
 PROC		:=	$(shell uname -p)
-DEBUGFLAGS	=	""
-LINKDEBUG	=	""
-OPTFLAGS	=	""
-#COMPILATION	=	""
+DEBUGFLAGS	=	
+LINKDEBUG	=	
+OPTFLAGS	=	
+#COMPILATION	=	
 
 ifeq "$(OS)" "Windows_NT"
 endif
 ifeq "$(OS)" "Linux"
-	LDLIBS		+= ""
+	LDLIBS		+= 
 	DEBUGFLAGS	+= " -fsanitize=memory -fsanitize-memory-use-after-dtor -fsanitize=thread"
 endif
 ifeq "$(OS)" "Darwin"
@@ -124,9 +126,9 @@ disp_indent	=	for I in `seq 1 $(MAKELEVEL)`; do \
 					test "$(MAKELEVEL)" '!=' '0' && printf "\t"; \
 				done
 color_exec	=	$(call disp_indent); \
-				echo $(1)➤ $(3)$(2)"\n"$(strip $(4))$(CCLEAR);$(4)
+				echo $(1)➤ $(3)$(2)"\n"'$(strip $(4))'$(CCLEAR);$(4)
 color_exec_t=	$(call disp_indent); \
-				echo $(1)➤ $(strip $(3))$(2)$(CCLEAR);$(3)
+				echo $(1)➤ '$(strip $(3))'$(2)$(CCLEAR);$(3)
 
 ifneq ($(filter 1,$(strip $(DEBUGLEVEL)) ${DEBUG}),)
 	OPTLEVEL = 0
@@ -142,11 +144,11 @@ ifneq ($(filter 2,$(strip $(DEBUGLEVEL)) ${DEBUG}),)
 endif
 
 ifneq ($(filter 1,$(strip $(OPTLEVEL)) ${OPTI}),)
-	DEBUGFLAGS = ""
+	DEBUGFLAGS = 
 	OPTFLAGS = $(OPTFLAGS1)
 endif
 ifneq ($(filter 2,$(strip $(OPTLEVEL)) ${OPTI}),)
-	DEBUGFLAGS = ""
+	DEBUGFLAGS = 
 	OPTFLAGS = $(OPTFLAGS1) $(OPTFLAGS2)
 endif
 
@@ -159,7 +161,7 @@ ifneq ($(filter %.cpp,$(SRC)),)
 endif
 
 ifdef ${NOWERROR}
-	WERROR = ""
+	WERROR = 
 endif
 
 ifeq "$(strip $(LIBFT))" "2"
@@ -211,10 +213,6 @@ fclean: clean
 	@$(call color_exec,$(CCLEAN_T),$(CCLEAN),"Fclean:",\
 		$(RM) $(NAME))
 
-$(PRINTF_MANAGER_LIB): $(OBJ)
-	@$(call color_exec,$(CCLEAN_T),$(CCLEAN),"Lib:",\
-		ar rc $(PRINTF_MANAGER_LIB) $(OBJDIR)/printf-test-manager.o)
-
 WGET	:= $(shell wget --version 2>/dev/null)
 CURL	:= $(shell curl --version 2>/dev/null)
 
@@ -227,18 +225,21 @@ else
 ifdef CURL
 	DL=curl
 endif
+endif
+ifdef DL
 	${DL} -o $(PRINTF_TEST_SLIB) $(REMOTE_PRINTF_SLIB)
+endif
 #	@make -C assets
 #	@cp assets/$(PRINTF_TEST_SLIB) .
 
-$(FINAL_PRINTF_LIB): $(PRINTF_TEST_SLIB) $(PRINTF_MANAGER_LIB)
+$(LIB_FTPRINTF_SO): $(PRINTF_TEST_SLIB)
 	@make -C "$(PRINTFDIR)"
-	@cp "$(PRINTFDIR)"/$(LIB_FTPRINTF) .
-	@echo "Creating final so lib"
-	@$(call color_exec,$(CLINK_T),$(CLINK),"Final lib:",\
-		clang -shared -fPIC -Wl\\x2c-all_load $(LIB_FTPRINTF) $(PRINTF_TEST_SLIB) $(PRINTF_MANAGER_LIB) -o $(FINAL_PRINTF_LIB))
+	@cp "$(PRINTFDIR)"/$(LIB_FTPRINTF) $(ASSETS_DIR)
+	@mkdir -p $(TMP_LIB_FTPRINTF)
+	@$(call color_exec,$(CLINK_T),$(CLINK),"Creating libftprintf.so lib",\
+		cd $(TMP_LIB_FTPRINTF) && ar -xv ../$(LIB_FTPRINTF) >/dev/null && $(CC) -shared -fPIC *.o -o $(LIB_FTPRINTF_SO) && cp $(LIB_FTPRINTF_SO) ../..)
 
-printf: $(FINAL_PRINTF_LIB)
+printf: $(LIB_FTPRINTF_SO)
 	
 #	All removing then compiling
 re: fclean all
