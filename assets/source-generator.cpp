@@ -41,7 +41,7 @@ static std::list< std::string >		generateRandomStrings(size_t num)
 	return strs;
 }
 
-static std::list< std::string >			generateRandomChars(size_t num)
+/*static std::list< std::string >			generateRandomChars(size_t num)
 {
 	std::list< std::string >	chars;
 	char						r;
@@ -68,7 +68,7 @@ static std::list< std::string >		generateRandomFloats(size_t num)
 	for (size_t i = 0; i < num; i++)
 		floats.push_back(std::to_string((float)rand() / (float)rand()));
 	return floats;
-}
+}*/
 
 static std::list< std::string >		generateModifiers(char convertion)
 {
@@ -147,18 +147,38 @@ static std::string					generateUniqueFileNmae(char convertion)
 	return ss.str();
 }
 
-static void							generateBasicTests(char convertion, std::string arg)
+static std::string					getArgTypeFromConvertion(char convertion)
+{
+	if (strchr("idDoOuUxX", convertion))
+		return "intmax_t";
+	if (strchr("aAfFeEgG", convertion))
+		return "double";
+	if (convertion == 's')
+		return "char *";
+	if (convertion == 'S')
+		return "wchar_t *";
+	if (convertion == 'c')
+		return "char";
+	if (convertion == 'C')
+		return "wchar_t";
+	if (convertion == 'p')
+		return "void *";
+	return "int";
+}
+
+static void							generateBasicTests(char convertion)
 {
 	char				buff[0xF00];
 	std::ofstream		ofs;
 	std::string			fmt;
 	const char			*format;
-	const char			*sarg;
 	std::string			file_name;
 	std::string			file(FILE_HEADER_TEMPLATE);
 	static int			g_index[256];
+	std::string			arg_header;
 
-	std::cout << "generating tests for convertion: " << convertion << " with arg: " << arg << std::endl;
+	arg_header = getArgTypeFromConvertion(convertion);
+	std::cout << "generating tests for convertion: " << convertion << std::endl;
 
 	//with padd
 	//without padd
@@ -204,14 +224,14 @@ static void							generateBasicTests(char convertion, std::string arg)
 			fmt += "." + std::to_string(padd);
 		fmt += modifier + convertion + sufix;
 		format = fmt.c_str();
-		sarg = arg.c_str();
 //		ss.str("");
 		sprintf(buff, FILE_CONTENT_TEMPLATE,
 				convertion,
 				g_index[static_cast< int >(convertion)],
+				arg_header.c_str(),
 				format,
-				format, getCastFromModifier(modifier, convertion), sarg,
-				format, getCastFromModifier(modifier, convertion), sarg);
+				format, getCastFromModifier(modifier, convertion),
+				format, getCastFromModifier(modifier, convertion));
 		file += buff;
 		g_index[static_cast< int >(convertion)]++;
 		//std::cout << "created test file with format: \"" << fmt << "\"" << std::endl;
@@ -226,17 +246,10 @@ static void							generateBasicTests(char convertion, std::string arg)
 
 static void							generateTestFiles(const char *convs)
 {
-	std::string		randint;
-	std::string		randptr;
-	size_t			ntests = 2;
-
-	for (char c : {'d', 'i', 'o', 'u', 'x', 'X', 'D', 'O', 'U'})
-		if (strchr(convs, c))
-			for (intmax_t r : generateRandomNumbers(ntests, -1))
-			{
-				randint = std::to_string(r);
-				generateBasicTests(c, randint);
-			}
+	for (char c : "diouxXDOUpscCaAeEfFgGS")
+		if (c && strchr(convs, c))
+			generateBasicTests(c);
+	/*
 	if (strchr(convs, 'p'))
 		for (const char * s : {"(void *)0x42", "(void *)0x7fff9532", "(void *)0x0"})
 			generateBasicTests('p', s);
@@ -262,7 +275,7 @@ static void							generateTestFiles(const char *convs)
 		generateBasicTests('C', "L\'a\'");
 		generateBasicTests('C', "L\'ø\'");
 		generateBasicTests('C', "L\'≠\'");
-	}
+	}*/
 }
 
 static void							remove_dir_files(const char *f)

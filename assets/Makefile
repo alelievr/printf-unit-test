@@ -6,7 +6,7 @@
 #    By: alelievr <marvin@42.fr>                    +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2014/07/15 15:13:38 by alelievr          #+#    #+#              #
-#    Updated: 2017/01/08 02:09:33 by alelievr         ###   ########.fr        #
+#    Updated: 2017/01/08 16:30:51 by alelievr         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -181,7 +181,7 @@ $(NAME): $(EXENAME)
 		./$(EXENAME) "dDioOuUxXpsScCeEfFgGaA")
 	@mkdir -p $(TMPDIR)
 	@$(call color_exec,$(CLINK_T),$(CLINK),"Compilation of tests:",\
-		cd $(TMPDIR) && clang -c -fPIC -O0 -Werror *.c)
+		cd $(TMPDIR) && clang -c -fPIC -O2 -Werror *.c)
 	@$(call color_exec,$(CLINK_T),$(CLINK),"Archiving the tests:",\
 		cd $(TMPDIR) && $(CC) -shared -fPIC *.o -o $(NAME) && rm -f *.o)
 

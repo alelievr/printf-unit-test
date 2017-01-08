@@ -18,12 +18,13 @@ char *				g_current_format;
 static int			g_current_index = 0;
 static int			g_failed_tests = 0;
 static int			g_passed_tests = 0;
+static long long	g_current_arg;
 
 static void	usage() __attribute__((noreturn));
 static void	usage()
 {
 	printf("usage: ./run_test < converters >\n");
-	printf("supported converters: \"douXcsp\"");
+	printf("supported converters: \""SUPPORTED_CONVERTERS"\"");
 	exit(-1);
 }
 
@@ -46,7 +47,7 @@ static void	sigh(int s)
 	(void)s;
 }
 
-static void run_test(void (*testf)(char *b, int (*)(), int *, int *), int (*ft_printf)(), int fd[2])
+static void run_test(void (*testf)(char *b, int (*)(), int *, int *, long long), int (*ft_printf)(), int fd[2], long long arg)
 {
 	char		buff[0xF00];
 	char		printf_buff[0xF00];
@@ -54,25 +55,30 @@ static void run_test(void (*testf)(char *b, int (*)(), int *, int *), int (*ft_p
 	long		r;
 	int			d1, d2; //d1 is the printf return and d2 ft_printf return.
 
-	testf(g_current_format, ft_printf, &d1, &d2);
+	g_current_arg = arg;
+	testf(g_current_format, ft_printf, &d1, &d2, arg);
+	fflush(stdout);
 	if (d1 != d2)
 	{
-		cout("bad return value for format: \"%s\": %i vs %i", g_current_format, d1, d2);
+		cout(C_ERROR"bad return value for format: \"%s\": %i vs %i"C_CLEAR, g_current_format, d1, d2);
+		g_failed_tests++;
 	}
 	r = read(fd[READ], buff, sizeof(buff));
 	if (r > 0)
 	{
-		if (!strchr(buff, '\x99'))
+		buff[r] = 0;
+		if (!memchr(buff, '\x99', (size_t)r))
 		{
-			printf("error while getting result on test: %s\n", g_current_format);
+			printf(C_ERROR"error while getting result on test: %s\n"C_CLEAR, g_current_format);
 			return ;
 		}
-		strlcpy(printf_buff, buff, strchr(buff, '\x99') - buff);
-		strlcpy(ftprintf_buff, strchr(buff, '\x99') + 1, sizeof(buff));
-		buff[r] = 0;
+		size_t off = (size_t)((char *)memchr(buff, '\x99', (size_t)r) - buff);
+		memcpy(printf_buff, buff, off);
+		printf_buff[off] = 0;
+		memcpy(ftprintf_buff, buff + off + 1, r + 1);
 		if (strcmp(printf_buff, ftprintf_buff))
 		{
-			cout(C_ERROR"[ERROR] diff on output for format \"%s\" -> got: [%s], expected: [%s]\n", g_current_format, ftprintf_buff, printf_buff);
+			cout(C_ERROR"[ERROR] diff on output for format \"%s\" and arg: %li -> got: [%s], expected: [%s]\n"C_CLEAR, g_current_format, arg, ftprintf_buff, printf_buff);
 			g_failed_tests++;
 		}
 		else
@@ -88,8 +94,11 @@ static void	run_tests(void *tests_h, int (*ft_printf)(), char *convs)
 	int			fd[2];
 	void		(*test)();
 	int			index;
-	int			test_id = 0;
+	int			total_test_count = 0;
+	int			test_count = 0;
 	int			old_failed_tests;
+	long long	args[0xF0];
+	int			argc;
 
 	if (*convs)
 		printf("Starting tests ...\n");
@@ -100,25 +109,31 @@ static void	run_tests(void *tests_h, int (*ft_printf)(), char *convs)
 	while (*convs)
 	{
 		old_failed_tests = g_failed_tests;
-		cout("testing %%%c ...\n", *convs);
+		cout(C_TITLE"testing %%%c ...\n"C_CLEAR, *convs);
 		index = 0;
+		test_count = 0;
 		while (42)
 		{
 			g_current_index = index;
 			sprintf(fun_name, "printf_unit_test_%c_%.9i", *convs, index);
 			if (!(test = (void(*)())dlsym(tests_h, fun_name)))
 				break ;
-			run_test(test, ft_printf, fd);
+			argc = generate_rand_args(*convs, args);
+			for (int i = 0; i < argc; i++)
+			{
+				run_test(test, ft_printf, fd, args[i]);
+				total_test_count++;
+				test_count++;
+			}
 			index++;
-			test_id++;
 		}
 		if (g_failed_tests == old_failed_tests)
-			cout(C_PASS"Passed all %i tests for convertion %c\n", index, *convs);
+			cout(C_PASS"Passed all %'i tests for convertion %c\n"C_CLEAR, test_count, *convs);
 		else
-			cout(C_ERROR"Failed %i tests for convertion %c\n", g_failed_tests - old_failed_tests, *convs);
+			cout(C_ERROR"Failed %i tests for convertion %c\n"C_CLEAR, g_failed_tests - old_failed_tests, *convs);
 		convs++;
 	}
-	cout("total format tested: %i\n", test_id);
+	cout("total format tested: %i\n", total_test_count);
 }
 
 static void	ask_download_tests(void)

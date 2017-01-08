@@ -49,7 +49,7 @@
 #define LONG_MASK	0xFFFFFFFFFFFFFFFF
 
 #define FILE_HEADER_TEMPLATE	"#include <math.h>\n#include <float.h>\n#include <string.h>\n#include <unistd.h>\n#include <stdint.h>\n#include <stddef.h>\n#include <wchar.h>\n\nextern int\t\tprintf(const char *, ...);\n"
-#define FILE_CONTENT_TEMPLATE	"void printf_unit_test_%c_%.9i(char *b, int (*ft_printf)(const char *, ...), int *r1, int *r2)\n{\n\tstrcpy(b, \"%s\");\n\t*r1 = printf(\"%s\", %s%s);\n\tfflush(stdout);\n\twrite(1, \"\\x99\", 1);\n\t*r2 = ft_printf(\"%s\", %s%s);\n}\n\n"
+#define FILE_CONTENT_TEMPLATE	"void printf_unit_test_%c_%.9i(char *b, int (*ft_printf)(const char *, ...), int *r1, int *r2, %s arg)\n{\n\tstrcpy(b, \"%s\");\n\t*r1 = printf(\"%s\", %sarg);\n\tfflush(stdout);\n\twrite(1, \"\\x99\", 1);\n\t*r2 = ft_printf(\"%s\", %sarg);\n}\n\n"
 
 #define FILE_TEMPLATE			FILE_HEADER_TEMPLATE FILE_CONTENT_TEMPLATE
 
