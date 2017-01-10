@@ -6,7 +6,7 @@
 /*   By: alelievr <alelievr@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2016/12/23 17:46:11 by alelievr          #+#    #+#             */
-/*   Updated: 2017/01/08 18:28:56 by alelievr         ###   ########.fr       */
+/*   Updated: 2017/01/10 17:02:23 by alelievr         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,7 +28,7 @@
 
 #define	C_ERROR					"\033[38;5;196m"
 #define	C_PASS					"\033[38;5;118m"
-#define	C_CRASH					"\033[48;5;159m\033[38;5;93m"
+#define	C_CRASH					"\033[38;5;93m"
 #define C_TITLE					"\033[38;5;70m"
 #define C_CLEAR					"\033[0m"
 

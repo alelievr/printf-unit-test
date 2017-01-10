@@ -13,6 +13,7 @@
 #include "printf_unit_test.h"
 #include <fcntl.h>
 #include <stdarg.h>
+#include <setjmp.h>
 
 char *				g_current_format;
 static int			g_current_index = 0;
@@ -20,6 +21,9 @@ static int			g_failed_tests = 0;
 static int			g_passed_tests = 0;
 static long long	g_current_arg;
 static long			last_time_update;
+static jmp_buf		jmp_next_test;
+static int			sig_counter = 0;
+static int			g_current_test_index = 0;
 
 static void	usage() __attribute__((noreturn));
 static void	usage()
@@ -42,10 +46,15 @@ static void	cout(const char *f, ...)
 	va_end(ap);
 }
 
+static void	sigh(int s) __attribute__((noreturn));
 static void	sigh(int s)
 {
-	cout(C_CRASH"catched signal: %s when testing format: \"%s\" with arg: \n", strsignal(s), g_current_index, g_current_format, g_current_arg);
-	(void)s;
+	cout(C_CRASH"catched signal: %s when testing format: \"%s\" with arg: %lli\n", strsignal(s), g_current_format, g_current_arg);
+	if (sig_counter >= 500)
+		cout(C_CRASH"received too many crash signals, aborting test ...\n"), exit(-1);
+	sig_counter++;
+	g_current_test_index++;
+	longjmp(jmp_next_test, 1);
 }
 
 static void run_test(void (*testf)(char *b, int (*)(), int *, long long, int), int (*ft_printf)(), int fd[2], long long arg)
@@ -127,9 +136,11 @@ static void	run_tests(void *tests_h, int (*ft_printf)(), char *convs)
 			if (!(test = (void(*)())dlsym(tests_h, fun_name)))
 				break ;
 			argc = generate_rand_args(*convs, args);
-			for (int i = 0; i < argc; i++)
+			g_current_test_index = -1;
+			setjmp(jmp_next_test);
+			while (++g_current_test_index < argc)
 			{
-				run_test(test, ft_printf, fd, args[i]);
+				run_test(test, ft_printf, fd, args[g_current_test_index]);
 				total_test_count++;
 				test_count++;
 			}
