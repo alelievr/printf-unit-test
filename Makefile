@@ -6,7 +6,7 @@
 #    By: alelievr <marvin@42.fr>                    +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2014/07/15 15:13:38 by alelievr          #+#    #+#              #
-#    Updated: 2017/01/08 18:46:28 by alelievr         ###   ########.fr        #
+#    Updated: 2017/01/12 01:56:43 by alelievr         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -213,15 +213,13 @@ fclean: clean
 	@$(call color_exec,$(CCLEAN_T),$(CCLEAN),"Fclean:",\
 		$(RM) $(NAME))
 
-$(LIB_FTPRINTF_SO):
+printf:
 	@make -C "$(PRINTFDIR)"
 	@cp "$(PRINTFDIR)"/$(LIB_FTPRINTF) $(ASSETS_DIR)
 	@rm -rf $(TMP_LIB_FTPRINTF)
 	@mkdir -p $(TMP_LIB_FTPRINTF)
 	@$(call color_exec,$(CLINK_T),$(CLINK),"Creating libftprintf.so lib",\
 		cd $(TMP_LIB_FTPRINTF) && ar -xv ../$(LIB_FTPRINTF) >/dev/null && $(CC) -shared -fPIC *.o -o $(LIB_FTPRINTF_SO) && cp $(LIB_FTPRINTF_SO) ../..)
-
-printf: $(LIB_FTPRINTF_SO)
 	
 #	All removing then compiling
 re: fclean all
