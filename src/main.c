@@ -14,6 +14,7 @@
 #include <fcntl.h>
 #include <stdarg.h>
 #include <setjmp.h>
+#include <unistd.h>
 
 char *				g_current_format;
 static int			g_current_index = 0;
@@ -24,11 +25,15 @@ static long			last_time_update;
 static jmp_buf		jmp_next_test;
 static int			sig_counter = 0;
 static int			g_current_test_index = 0;
+static bool			stop_to_first_error = false;
 
 static void	usage() __attribute__((noreturn));
 static void	usage()
 {
-	printf("usage: ./run_test < converters >\n");
+	printf("usage: ./run_test < options > < converters >\n"
+			"options:\n"
+			"  -e: stop to the first error / segfault\n"
+			"  -h: display help\n");
 	printf("supported converters: \""SUPPORTED_CONVERTERS"\"");
 	exit(-1);
 }
@@ -50,6 +55,8 @@ static void	sigh(int s) __attribute__((noreturn));
 static void	sigh(int s)
 {
 	cout(C_CRASH"catched signal: %s when testing format: \"%s\" with arg: %lli\n", strsignal(s), g_current_format, g_current_arg);
+	if (stop_to_first_error)
+		exit(0);
 	if (sig_counter >= 500)
 		cout(C_CRASH"received too many crash signals, aborting test ...\n"), exit(-1);
 	sig_counter++;
@@ -148,7 +155,11 @@ static void	run_tests(void *tests_h, int (*ft_printf)(), char *convs)
 		if (g_failed_tests == old_failed_tests)
 			cout(C_PASS"Passed all %'i tests for convertion %c\n"C_CLEAR, test_count, *convs);
 		else
+		{
 			cout(C_ERROR"Failed %i tests for convertion %c\n"C_CLEAR, g_failed_tests - old_failed_tests, *convs);
+			if (stop_to_first_error)
+				exit(0);
+		}
 		convs++;
 	}
 	cout("total format tested: %i\n", total_test_count);
@@ -160,7 +171,7 @@ static void	ask_download_tests(void)
 
 	printf("main test library was not found, do you want to download it ? (y/n)");
 	if ((c = (char)getchar()) == 'y' || c == 'Y' || c == '\n')
-		system("curl -o printf-tests.so https://raw.githubusercontent.com/alelievr/printf-unit-test-libs/master/printf-tests.so?token=AGjy4wBye2wxE6bLiGPFtzg4B5W0wT-Bks5Ye7RLwA%3D%3D");
+		system("curl -o printf-tests.so https://raw.githubusercontent.com/alelievr/printf-unit-test-libs/master/printf-tests.so");
 	else
 		exit(0);
 }
@@ -179,6 +190,21 @@ static void	*timeout_thread(void *t)
 	}
 }
 
+static void	options(int ac, char **av)
+{
+	int		opt;
+
+	while ((opt = getopt(ac, av, "he")) != -1)
+		switch (opt)
+		{
+			case 'h':
+				usage();
+			case 'e':
+				stop_to_first_error = true;
+				break ;
+		}
+}
+
 int			main(int ac, char **av)
 {
 	static char		buff[0xF00];
@@ -188,8 +214,9 @@ int			main(int ac, char **av)
 	int				(*ft_printf)();
 	pthread_t		p;
 
-	if (ac > 2)
-		usage();
+	options(ac, av);
+	ac -= optind;
+	av += optind;
 	if (ac == 2)
 		testflags = av[1];
 	signal(SIGSEGV, sigh);

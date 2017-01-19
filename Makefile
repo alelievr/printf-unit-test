@@ -6,7 +6,7 @@
 #    By: alelievr <marvin@42.fr>                    +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2014/07/15 15:13:38 by alelievr          #+#    #+#              #
-#    Updated: 2017/01/12 01:56:43 by alelievr         ###   ########.fr        #
+#    Updated: 2017/01/20 00:40:21 by alelievr         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -59,7 +59,7 @@ CFLAGS		=	-Weverything -pedantic -ferror-limit=999
 CPROTECTION	=	-z execstack -fno-stack-protector
 
 DEBUGFLAGS1	=	-O0 -ggdb
-DEBUGFLAGS2	=	-fsanitize=address -fno-omit-frame-pointer -fno-optimize-sibling-calls -O0 fsanitize-memory-track-origins=2
+DEBUGFLAGS2	=	-fsanitize=address -fno-omit-frame-pointer -fno-optimize-sibling-calls -O0
 OPTFLAGS1	=	-funroll-loops -O2
 OPTFLAGS2	=	-pipe -funroll-loops -Ofast
 
