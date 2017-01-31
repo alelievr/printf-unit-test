@@ -15,9 +15,11 @@
 #include <stdarg.h>
 #include <setjmp.h>
 #include <unistd.h>
+#include <locale.h>
 
 char *				g_current_format;
 static int			g_current_index = 0;
+static char			g_current_conv;
 static int			g_failed_tests = 0;
 static int			g_passed_tests = 0;
 static long long	g_current_arg;
@@ -51,10 +53,38 @@ static void	cout(const char *f, ...)
 	va_end(ap);
 }
 
+static char	*arg_to_string(long long int arg)
+{
+	static char		buff[0xF000];
+
+	switch (g_current_conv)
+	{
+		case 'd': case 'D': case 'i': case 'o': case 'O': case 'u': case 'U': case 'x': case 'X':
+			sprintf(buff, "%lli", arg);
+			break ;
+		case 'p':
+			sprintf(buff, "%p", (void *)arg);
+			break ;
+		case 's':
+			sprintf(buff, "\"%s\"", (char *)arg);
+			break ;
+		case 'S':
+			sprintf(buff, "L\"%S\"", (wchar_t *)arg);
+			break ;
+		case 'c':
+			sprintf(buff, "\'%c\'", (char)arg);
+			break ;
+		case 'C':
+			sprintf(buff, "L\'%c\'", (wchar_t)arg);
+			break ;
+	}
+	return buff;
+}
+
 static void	sigh(int s) __attribute__((noreturn));
 static void	sigh(int s)
 {
-	cout(C_CRASH"catched signal: %s when testing format: \"%s\" with arg: %lli\n", strsignal(s), g_current_format, g_current_arg);
+	cout(C_CRASH"catched signal: %s when testing format: \"%s\" with arg: %s\n", strsignal(s), g_current_format, arg_to_string(g_current_arg));
 	if (stop_to_first_error)
 		exit(0);
 	if (sig_counter >= 500)
@@ -75,15 +105,17 @@ static void run_test(void (*testf)(char *b, int (*)(), int *, long long, int), i
 
 	g_current_arg = arg;
 	b = clock();
+	//true printf
 	testf(g_current_format, ft_printf, &d1, arg, 0);
 	m = clock();
 	last_time_update = time(NULL); //for timeout
+	//ft_printf
 	testf(g_current_format, ft_printf, &d2, arg, 1);
 	e = clock();
 	fflush(stdout);
 	if (d1 != d2)
 	{
-		cout(C_ERROR"bad return value for format: \"%s\": %i vs %i\n"C_CLEAR, g_current_format, d1, d2);
+		cout(C_ERROR"bad return value for format \"%s\" and arg: %s -> got: %i expected %i\n"C_CLEAR, g_current_format, arg_to_string(arg), d2, d1);
 		if (stop_to_first_error)
 			exit(0);
 		g_failed_tests++;
@@ -103,7 +135,7 @@ static void run_test(void (*testf)(char *b, int (*)(), int *, long long, int), i
 		memcpy(ftprintf_buff, buff + off + 1, r + 1);
 		if (strcmp(printf_buff, ftprintf_buff))
 		{
-			cout(C_ERROR"[ERROR] diff on output for format \"%s\" and arg: %li -> got: [%s], expected: [%s]\n"C_CLEAR, g_current_format, arg, ftprintf_buff, printf_buff);
+			cout(C_ERROR"[ERROR] diff on output for format \"%s\" and arg: %s -> got: [%s], expected: [%s]\n"C_CLEAR, g_current_format, arg_to_string(arg), ftprintf_buff, printf_buff);
 			if (stop_to_first_error)
 				exit(0);
 			g_failed_tests++;
@@ -133,8 +165,10 @@ static void	run_tests(void *tests_h, int (*ft_printf)(), char *convs)
 		perror("pipe"), exit(-1);
 	dup2(fd[WRITE], STDOUT_FILENO);
 	close(fd[WRITE]);
+	setlocale(LC_ALL, "");
 	while (*convs)
 	{
+		g_current_conv = *convs;
 		old_failed_tests = g_failed_tests;
 		cout(C_TITLE"testing %%%c ...\n"C_CLEAR, *convs);
 		index = -1;

@@ -6,12 +6,13 @@
 /*   By: alelievr <alelievr@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2016/12/23 17:46:11 by alelievr          #+#    #+#             */
-/*   Updated: 2017/01/10 17:02:23 by alelievr         ###   ########.fr       */
+/*   Updated: 2017/01/31 17:26:45 by alelievr         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #pragma once
 #pragma clang diagnostic ignored "-Wformat-nonliteral"
+#pragma clang diagnostic ignored "-Wformat-non-iso"
 
 #include <stdio.h>
 #include <dlfcn.h>
