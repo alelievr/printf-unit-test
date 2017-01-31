@@ -83,7 +83,9 @@ static void run_test(void (*testf)(char *b, int (*)(), int *, long long, int), i
 	fflush(stdout);
 	if (d1 != d2)
 	{
-		cout(C_ERROR"bad return value for format: \"%s\": %i vs %i"C_CLEAR, g_current_format, d1, d2);
+		cout(C_ERROR"bad return value for format: \"%s\": %i vs %i\n"C_CLEAR, g_current_format, d1, d2);
+		if (stop_to_first_error)
+			exit(0);
 		g_failed_tests++;
 	}
 	r = read(fd[READ], buff, sizeof(buff));
@@ -102,6 +104,8 @@ static void run_test(void (*testf)(char *b, int (*)(), int *, long long, int), i
 		if (strcmp(printf_buff, ftprintf_buff))
 		{
 			cout(C_ERROR"[ERROR] diff on output for format \"%s\" and arg: %li -> got: [%s], expected: [%s]\n"C_CLEAR, g_current_format, arg, ftprintf_buff, printf_buff);
+			if (stop_to_first_error)
+				exit(0);
 			g_failed_tests++;
 		}
 		else
@@ -155,11 +159,7 @@ static void	run_tests(void *tests_h, int (*ft_printf)(), char *convs)
 		if (g_failed_tests == old_failed_tests)
 			cout(C_PASS"Passed all %'i tests for convertion %c\n"C_CLEAR, test_count, *convs);
 		else
-		{
 			cout(C_ERROR"Failed %i tests for convertion %c\n"C_CLEAR, g_failed_tests - old_failed_tests, *convs);
-			if (stop_to_first_error)
-				exit(0);
-		}
 		convs++;
 	}
 	cout("total format tested: %i\n", total_test_count);
@@ -169,11 +169,19 @@ static void	ask_download_tests(void)
 {
 	char	c;
 
+	__attribute__((unused)) const char * const files[] = {
+		"printf-tests.so",
+		"printf-tests-floats.so"
+	};
+
 	printf("main test library was not found, do you want to download it ? (y/n)");
 	if ((c = (char)getchar()) == 'y' || c == 'Y' || c == '\n')
 		system("curl -o printf-tests.so https://raw.githubusercontent.com/alelievr/printf-unit-test-libs/master/printf-tests.so");
 	else
 		exit(0);
+	printf("do you want to download float test library too ? (y/n)");
+	if ((c = (char)getchar()) == 'y' || c == 'Y' || c == '\n')
+		system("curl -o printf-tests.so https://raw.githubusercontent.com/alelievr/printf-unit-test-libs/master/printf-tests-floats.so");
 }
 
 static void	*timeout_thread(void *t)
@@ -217,8 +225,9 @@ int			main(int ac, char **av)
 	options(ac, av);
 	ac -= optind;
 	av += optind;
-	if (ac == 2)
-		testflags = av[1];
+	if (ac == 1)
+		testflags = av[0];
+
 	signal(SIGSEGV, sigh);
 	signal(SIGBUS, sigh);
 	signal(SIGPIPE, sigh);

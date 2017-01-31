@@ -41,35 +41,6 @@ static std::list< std::string >		generateRandomStrings(size_t num)
 	return strs;
 }
 
-/*static std::list< std::string >			generateRandomChars(size_t num)
-{
-	std::list< std::string >	chars;
-	char						r;
-
-	chars.push_back("\\0");
-
-	while (chars.size() != num)
-	{
-		r = static_cast< char >(rand());
-		if (isprint(r))
-			chars.push_back(std::string("") + r);
-	}
-	return chars;
-}
-
-static std::list< std::string >		generateRandomFloats(size_t num)
-{
-	std::list< std::string >	floats;
-
-//	floats.push_back("NAN");
-//	floats.push_back("-INFINITY");
-//	floats.push_back("FLT_MIN_EXP");
-
-	for (size_t i = 0; i < num; i++)
-		floats.push_back(std::to_string((float)rand() / (float)rand()));
-	return floats;
-}*/
-
 static std::list< std::string >		generateModifiers(char convertion)
 {
 	std::list< std::string >		mods;
@@ -246,7 +217,7 @@ static void							generateBasicTests(char convertion)
 
 static void							generateTestFiles(const char *convs)
 {
-	for (char c : "diouxXDOUpscCaAeEfFgGS")
+	for (char c : "diouxXDOUpsScCaAeEfFgG")
 		if (c && strchr(convs, c))
 			generateBasicTests(c);
 	/*
@@ -313,6 +284,11 @@ int									main(int ac, char **av)
 	remove_dir_files(OUT_FOLDER);
 
 	srand((unsigned)time(NULL) + (unsigned)clock());
+
+	//basic flags:
+	//std::string	flags = "diouxXDOUpcCsS";
+	//float flags
+	//std::string	flags = "aAeEfFgG";
 
 	//create all test files
 	generateTestFiles(av[1] ? av[1] : "");
