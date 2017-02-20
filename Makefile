@@ -6,7 +6,7 @@
 #    By: alelievr <marvin@42.fr>                    +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2014/07/15 15:13:38 by alelievr          #+#    #+#              #
-#    Updated: 2017/02/20 21:40:08 by alelievr         ###   ########.fr        #
+#    Updated: 2017/02/20 21:55:29 by alelievr         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -207,11 +207,13 @@ clean:
 	@$(call color_exec,$(CCLEAN_T),$(CCLEAN),"Clean:",\
 		$(RM) $(OBJ))
 	@rm -rf $(OBJDIR)
+	@rm -rf $(TMP_LIB_FTPRINTF)
+	@rm -rf $(ASSETS_DIR)/libftprintf.a
 
 #	Removing objects and exe
 fclean: clean
 	@$(call color_exec,$(CCLEAN_T),$(CCLEAN),"Fclean:",\
-		$(RM) $(NAME))
+		$(RM) $(NAME) $(LIB_FTPRINTF_SO))
 
 printf:
 	@make -C "$(PRINTFDIR)"

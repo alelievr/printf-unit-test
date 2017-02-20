@@ -17,17 +17,20 @@
 #include <unistd.h>
 #include <locale.h>
 
-char *				g_current_format;
-static int			g_current_index = 0;
-static char			g_current_conv;
-static int			g_failed_tests = 0;
-static int			g_passed_tests = 0;
-static long long	g_current_arg;
+static char *		current_format;
+static int			current_index = 0;
+static char			current_conv;
+static int			failed_tests = 0;
+static int			passed_tests = 0;
+static long long	current_arg;
 static long			last_time_update;
 static jmp_buf		jmp_next_test;
 static int			sig_counter = 0;
 static int			g_current_test_index = 0;
 static bool			stop_to_first_error = false;
+static double		current_speed_percent = 1.;
+static bool			quiet = false;
+static bool			no_speed = false;
 
 static void	usage() __attribute__((noreturn));
 static void	usage()
@@ -35,6 +38,8 @@ static void	usage()
 	printf("usage: ./run_test < options > < converters >\n"
 			"options:\n"
 			"  -e: stop to the first error / segfault\n"
+			"  -q: disable errer/segv/timeout output\n"
+			"  -r: disable speed test\n"
 			"  -h: display help\n");
 	printf("supported converters: \""SUPPORTED_CONVERTERS"\"");
 	exit(-1);
@@ -57,7 +62,7 @@ static char	*arg_to_string(long long int arg)
 {
 	static char		buff[0xF000];
 
-	switch (g_current_conv)
+	switch (current_conv)
 	{
 		case 'd': case 'D': case 'i': case 'o': case 'O': case 'u': case 'U': case 'x': case 'X':
 			sprintf(buff, "%lli", arg);
@@ -84,10 +89,11 @@ static char	*arg_to_string(long long int arg)
 static void	sigh(int s) __attribute__((noreturn));
 static void	sigh(int s)
 {
-	cout(C_CRASH"catched signal: %s when testing format: \"%s\" with arg: %s\n", strsignal(s), g_current_format, arg_to_string(g_current_arg));
+	if (!quiet)
+		cout(C_CRASH"catched signal: %s when testing format: \"%s\" with arg: %s\n", strsignal(s), current_format, arg_to_string(current_arg));
 	if (stop_to_first_error)
 		exit(0);
-	if (sig_counter >= 500)
+	if (sig_counter >= 500 && !quiet)
 		cout(C_CRASH"received too many crash signals, aborting test ...\n"), exit(-1);
 	sig_counter++;
 	g_current_test_index++;
@@ -102,23 +108,35 @@ static void run_test(void (*testf)(char *b, int (*)(), int *, long long, int), i
 	long		r;
 	int			d1, d2; //d1 is the printf return and d2 ft_printf return.
 	clock_t		b, m, e;
+	bool		failed;
 
-	g_current_arg = arg;
+	current_arg = arg;
 	b = clock();
 	//true printf
-	testf(g_current_format, ft_printf, &d1, arg, 0);
+	testf(current_format, ft_printf, &d1, arg, 0);
 	m = clock();
 	last_time_update = time(NULL); //for timeout
 	//ft_printf
-	testf(g_current_format, ft_printf, &d2, arg, 1);
+	testf(current_format, ft_printf, &d2, arg, 1);
 	e = clock();
+	if (current_index == 0)
+		current_speed_percent = (double)(e - m) / (double)(m - b);
+	else
+	{
+		double h = 1. / ((double)current_index + 1.);
+		double w = h * (current_index);
+		current_speed_percent = current_speed_percent * w + ((e - m) / (m - b) * h);
+	}
 	fflush(stdout);
+	failed = false;
 	if (d1 != d2)
 	{
-		cout(C_ERROR"bad return value for format \"%s\" and arg: %s -> got: %i expected %i\n"C_CLEAR, g_current_format, arg_to_string(arg), d2, d1);
+		if (!quiet)
+			cout(C_ERROR"bad return value for format \"%s\" and arg: %s -> got: %i expected %i\n"C_CLEAR, current_format, arg_to_string(arg), d2, d1);
 		if (stop_to_first_error)
 			exit(0);
-		g_failed_tests++;
+		failed_tests++;
+		failed = true;
 	}
 	r = read(fd[READ], buff, sizeof(buff));
 	if (r > 0)
@@ -126,7 +144,7 @@ static void run_test(void (*testf)(char *b, int (*)(), int *, long long, int), i
 		buff[r] = 0;
 		if (!memchr(buff, '\x99', (size_t)r))
 		{
-			printf(C_ERROR"error while getting result on test: %s\n"C_CLEAR, g_current_format);
+			printf(C_ERROR"error while getting result on test: %s\n"C_CLEAR, current_format);
 			return ;
 		}
 		size_t off = (size_t)((char *)memchr(buff, '\x99', (size_t)r) - buff);
@@ -135,13 +153,15 @@ static void run_test(void (*testf)(char *b, int (*)(), int *, long long, int), i
 		memcpy(ftprintf_buff, buff + off + 1, r + 1);
 		if (strcmp(printf_buff, ftprintf_buff))
 		{
-			cout(C_ERROR"[ERROR] diff on output for format \"%s\" and arg: %s -> got: [%s], expected: [%s]\n"C_CLEAR, g_current_format, arg_to_string(arg), ftprintf_buff, printf_buff);
+			if (!quiet)
+				cout(C_ERROR"[ERROR] diff on output for format \"%s\" and arg: %s -> got: [%s], expected: [%s]\n"C_CLEAR, current_format, arg_to_string(arg), ftprintf_buff, printf_buff);
 			if (stop_to_first_error)
 				exit(0);
-			g_failed_tests++;
+			if (!failed)
+				failed_tests++;
 		}
 		else
-			g_passed_tests++;
+			passed_tests++;
 		//split and diff the results
 	}
 	(void)index;
@@ -168,15 +188,15 @@ static void	run_tests(void *tests_h, int (*ft_printf)(), char *convs)
 	setlocale(LC_ALL, "");
 	while (*convs)
 	{
-		g_current_conv = *convs;
-		old_failed_tests = g_failed_tests;
+		current_conv = *convs;
+		old_failed_tests = failed_tests;
 		cout(C_TITLE"testing %%%c ...\n"C_CLEAR, *convs);
 		index = -1;
 		test_count = 0;
 		while (42)
 		{
 			index++;
-			g_current_index = index;
+			current_index = index;
 			sprintf(fun_name, "printf_unit_test_%c_%.9i", *convs, index);
 			if (!(test = (void(*)())dlsym(tests_h, fun_name)))
 				break ;
@@ -190,13 +210,15 @@ static void	run_tests(void *tests_h, int (*ft_printf)(), char *convs)
 				test_count++;
 			}
 		}
-		if (g_failed_tests == old_failed_tests)
+		if (failed_tests == old_failed_tests)
 			cout(C_PASS"Passed all %'i tests for convertion %c\n"C_CLEAR, test_count, *convs);
 		else
-			cout(C_ERROR"Failed %i tests for convertion %c\n"C_CLEAR, g_failed_tests - old_failed_tests, *convs);
+			cout(C_ERROR"Failed %'i of %'i tests for convertion %c\n"C_CLEAR, failed_tests - old_failed_tests, test_count, *convs);
+		if (!no_speed)
+			cout(C_PASS"On %c convertion, your printf is %.2f times slower than system's\n"C_CLEAR, *convs, current_speed_percent);
 		convs++;
 	}
-	cout("total format tested: %i\n", total_test_count);
+	cout("tested format count: %i\n", total_test_count);
 }
 
 static void	ask_download_tests(void)
@@ -229,7 +251,7 @@ static void	*timeout_thread(void *t)
 		sleep(1);
 		if (time(NULL) - last_time_update > 3) //3sec passed on ftprintf function
 		{
-			cout(C_ERROR"Timeout on format: \"%s\" with argument: %lli\n", g_current_format, g_current_arg);
+			cout(C_ERROR"Timeout on format: \"%s\" with argument: %lli\n", current_format, current_arg);
 			exit(0);
 		}
 	}
@@ -239,13 +261,19 @@ static void	options(int ac, char **av)
 {
 	int		opt;
 
-	while ((opt = getopt(ac, av, "he")) != -1)
+	while ((opt = getopt(ac, av, "heq")) != -1)
 		switch (opt)
 		{
 			case 'h':
 				usage();
 			case 'e':
 				stop_to_first_error = true;
+				break ;
+			case 'q':
+				quiet = true;
+				break ;
+			case 'r':
+				no_speed = true;
 				break ;
 		}
 }
@@ -276,7 +304,7 @@ int			main(int ac, char **av)
 		perror("dlopen"), exit(-1);
 	if (!(ft_printf = (int (*)())dlsym(ftprintf_handler, "ft_printf")))
 		perror("dlsym"), exit(-1);
-	g_current_format = buff;
+	current_format = buff;
 	if ((pthread_create(&p, NULL, timeout_thread, NULL)) == -1)
 		puts(C_ERROR"thread init failed"), exit(-1);
 	run_tests(tests_handler, ft_printf, testflags);
