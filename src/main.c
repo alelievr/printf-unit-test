@@ -121,7 +121,7 @@ static void run_test(void (*testf)(char *b, int (*)(), int *, long long, int), i
 	e = clock();
 	if (current_index == 0)
 		current_speed_percent = (double)(e - m) / (double)(m - b);
-	else
+	else if (m - b != 0)
 	{
 		double h = 1. / ((double)current_index + 1.);
 		double w = h * (current_index);
