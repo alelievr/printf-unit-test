@@ -201,6 +201,7 @@ static void	run_tests(void *tests_h, int (*ft_printf)(), char *convs)
 
 static void	ask_download_tests(void)
 {
+	char	buff[0xF0];
 	char	c;
 
 	__attribute__((unused)) const char * const files[] = {
@@ -208,14 +209,16 @@ static void	ask_download_tests(void)
 		"printf-tests-floats.so"
 	};
 
-	printf("main test library was not found, do you want to download it ? (y/n)");
-	if ((c = (char)getchar()) == 'y' || c == 'Y' || c == '\n')
+	printf("main test library was not found, do you want to download it ? (y/n) ");
+	fflush(stdout);
+	if ((c = (read(STDIN_FILENO, buff, sizeof(buff)), buff[0])) == 'y' || c == 'Y' || c == '\n')
 		system("curl -o printf-tests.so https://raw.githubusercontent.com/alelievr/printf-unit-test-libs/master/printf-tests.so");
 	else
 		exit(0);
 	printf("do you want to download float test library too ? (y/n)");
-	if ((c = (char)getchar()) == 'y' || c == 'Y' || c == '\n')
-		system("curl -o printf-tests.so https://raw.githubusercontent.com/alelievr/printf-unit-test-libs/master/printf-tests-floats.so");
+	fflush(stdout);
+	if ((c = (read(STDIN_FILENO, buff, sizeof(buff)), buff[0])) == 'y' || c == 'Y' || c == '\n')
+		system("curl -o printf-tests-floats.so https://raw.githubusercontent.com/alelievr/printf-unit-test-libs/master/printf-tests-floats.so");
 }
 
 static void	*timeout_thread(void *t)
