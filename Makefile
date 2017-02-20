@@ -6,7 +6,7 @@
 #    By: alelievr <marvin@42.fr>                    +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2014/07/15 15:13:38 by alelievr          #+#    #+#              #
-#    Updated: 2017/01/20 00:40:21 by alelievr         ###   ########.fr        #
+#    Updated: 2017/02/20 21:40:08 by alelievr         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -177,7 +177,7 @@ endif
 #################
 
 #	First target
-all: $(NAME)
+all: $(NAME) printf
 
 #	Linking
 $(NAME): $(OBJ)
