@@ -16,6 +16,7 @@
 #include <setjmp.h>
 #include <unistd.h>
 #include <locale.h>
+#include <ctype.h>
 
 static char *		current_format;
 static int			current_index = 0;
@@ -77,10 +78,16 @@ static char	*arg_to_string(long long int arg)
 			sprintf(buff, "L\"%S\"", (wchar_t *)arg);
 			break ;
 		case 'c':
-			sprintf(buff, "\'%c\'", (char)arg);
+			if (isprint((char)arg))
+				sprintf(buff, "\'%c\'", (char)arg);
+			else
+				sprintf(buff, "(char)%i", (int)arg);
 			break ;
 		case 'C':
-			sprintf(buff, "L\'%c\'", (wchar_t)arg);
+			if (arg != 0)
+				sprintf(buff, "L\'%c\'(%i)", (wchar_t)arg, (int)arg);
+			else
+				sprintf(buff, "(wchar_t)%i", (int)arg);
 			break ;
 	}
 	return buff;
@@ -132,7 +139,9 @@ static void run_test(void (*testf)(char *b, int (*)(), int *, long long, int), i
 	if (d1 != d2)
 	{
 		if (!quiet)
+		{
 			cout(C_ERROR"bad return value for format \"%s\" and arg: %s -> got: %i expected %i\n"C_CLEAR, current_format, arg_to_string(arg), d2, d1);
+		}
 		if (stop_to_first_error)
 			exit(0);
 		failed_tests++;
@@ -144,7 +153,7 @@ static void run_test(void (*testf)(char *b, int (*)(), int *, long long, int), i
 		buff[r] = 0;
 		if (!memchr(buff, '\x99', (size_t)r))
 		{
-			printf(C_ERROR"error while getting result on test: %s\n"C_CLEAR, current_format);
+			cout(C_ERROR"error while getting result on test: %s\n"C_CLEAR, current_format);
 			return ;
 		}
 		size_t off = (size_t)((char *)memchr(buff, '\x99', (size_t)r) - buff);
@@ -215,7 +224,9 @@ static void	run_tests(void *tests_h, int (*ft_printf)(), char *convs)
 		else
 			cout(C_ERROR"Failed %'i of %'i tests for convertion %c\n"C_CLEAR, failed_tests - old_failed_tests, test_count, *convs);
 		if (!no_speed)
+		{
 			cout(C_PASS"On %c convertion, your printf is %.2f times slower than system's\n"C_CLEAR, *convs, current_speed_percent);
+		}
 		convs++;
 	}
 	cout("tested format count: %i\n", total_test_count);
