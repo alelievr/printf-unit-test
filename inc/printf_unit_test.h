@@ -6,7 +6,7 @@
 /*   By: alelievr <alelievr@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2016/12/23 17:46:11 by alelievr          #+#    #+#             */
-/*   Updated: 2017/01/31 17:26:45 by alelievr         ###   ########.fr       */
+/*   Updated: 2017/03/26 01:35:53 by alelievr         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,8 +23,9 @@
 #include <time.h>
 #include <pthread.h>
 
-#define SUPPORTED_CONVERTERS	"idDoOuUxXcCsSp"
+#define SUPPORTED_CONVERTERS	"idDoOuUxXcCsSpaAeEfFgG"
 #define TEST_LIB_SO				"./printf-tests.so"
+#define TEST_LIB_FLOATS_SO		"./printf-tests-floats.so"
 #define FTPRINTF_LIB_SO			"./libftprintf.so"
 
 #define	C_ERROR					"\033[38;5;196m"

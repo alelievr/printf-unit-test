@@ -170,7 +170,7 @@ static void							generateBasicTests(char convertion)
 	for (const intmax_t & align : generateRandomNumbers(2, 0x3F, true)) //align attribute
 	for (const intmax_t & padd : generateRandomNumbers(2, 0x3F, true)) //padding attribute
 	for (const std::string & modifier : generateModifiers(convertion))
-	for (const std::string & prefix : generateRandomStrings(0)) //additional string to format
+	for (const std::string & prefix : generateRandomStrings(1)) //additional string to format
 	for (const std::string & sufix : generateRandomStrings(0)) //additional string to format
 	{
 		fmt = prefix + "%";
@@ -193,7 +193,7 @@ static void							generateBasicTests(char convertion)
 			fmt += std::to_string(align);
 		if (!strchr("pcCS", convertion) && padd != NOPADD)
 			fmt += "." + std::to_string(padd);
-		fmt += modifier + convertion + sufix;
+		fmt += modifier + convertion + sufix + prefix; //to test with string before and after
 		format = fmt.c_str();
 //		ss.str("");
 		sprintf(buff, FILE_CONTENT_TEMPLATE,

@@ -1,5 +1,4 @@
 *.o
-*.so
 *.a
 *~
 obj/
@@ -8,3 +7,4 @@ assets/tmp
 run_test
 src_gen
 assets/.source-generator.lock
+libprintf-test.c

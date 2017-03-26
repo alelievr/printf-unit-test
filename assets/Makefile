@@ -6,7 +6,7 @@
 #    By: alelievr <marvin@42.fr>                    +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2014/07/15 15:13:38 by alelievr          #+#    #+#              #
-#    Updated: 2017/01/31 16:47:14 by alelievr         ###   ########.fr        #
+#    Updated: 2017/03/26 00:20:09 by alelievr         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -178,7 +178,7 @@ $(EXENAME): $(OBJ)
 #	Linking
 $(NAME): $(EXENAME)
 	@$(call color_exec,$(CLINK_T),$(CLINK),"Generation of tests:",\
-		./$(EXENAME) "eEfFgGaA") #dDioOuUxXpsScC
+		./$(EXENAME) "dDioOuUxXpsScC") # eEfFgGaA
 	@mkdir -p $(TMPDIR)
 	@$(call color_exec,$(CLINK_T),$(CLINK),"Compilation of tests:",\
 		cd $(TMPDIR) && clang -c -fPIC -O2 -Werror *.c)

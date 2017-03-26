@@ -32,6 +32,7 @@ static bool			stop_to_first_error = false;
 static double		current_speed_percent = 1.;
 static bool			quiet = false;
 static bool			no_speed = false;
+static bool			float_test = false;
 
 static void	usage() __attribute__((noreturn));
 static void	usage()
@@ -41,6 +42,7 @@ static void	usage()
 			"  -e: stop to the first error / segfault\n"
 			"  -q: disable errer/segv/timeout output\n"
 			"  -r: disable speed test\n"
+			"  -f: test floating operations\n"
 			"  -h: display help\n");
 	printf("supported converters: \""SUPPORTED_CONVERTERS"\"");
 	exit(-1);
@@ -88,6 +90,9 @@ static char	*arg_to_string(long long int arg)
 				sprintf(buff, "L\'%c\'(%i)", (wchar_t)arg, (int)arg);
 			else
 				sprintf(buff, "(wchar_t)%i", (int)arg);
+			break ;
+		case 'a': case 'A': case 'e': case 'E': case 'f': case 'F': case 'g': case 'G':
+			sprintf(buff, "%f", (float)arg);
 			break ;
 	}
 	return buff;
@@ -160,7 +165,7 @@ static void run_test(void (*testf)(char *b, int (*)(), int *, long long, int), i
 		memcpy(printf_buff, buff, off);
 		printf_buff[off] = 0;
 		memcpy(ftprintf_buff, buff + off + 1, r + 1);
-		if (strcmp(printf_buff, ftprintf_buff))
+		if (memcmp(printf_buff, ftprintf_buff, off))
 		{
 			if (!quiet)
 				cout(C_ERROR"[ERROR] diff on output for format \"%s\" and arg: %s -> got: [%s], expected: [%s]\n"C_CLEAR, current_format, arg_to_string(arg), ftprintf_buff, printf_buff);
@@ -176,7 +181,7 @@ static void run_test(void (*testf)(char *b, int (*)(), int *, long long, int), i
 	(void)index;
 }
 
-static void	run_tests(void *tests_h, int (*ft_printf)(), char *convs)
+static void	run_tests(void *tests_h, int (*ft_printf)(), char *convs, char *allowed_convs)
 {
 	char		fun_name[0xF00];
 	int			fd[2];
@@ -197,6 +202,8 @@ static void	run_tests(void *tests_h, int (*ft_printf)(), char *convs)
 	setlocale(LC_ALL, "");
 	while (*convs)
 	{
+		if (!strchr(allowed_convs, *convs) && convs++)
+			continue ;
 		current_conv = *convs;
 		old_failed_tests = failed_tests;
 		cout(C_TITLE"testing %%%c ...\n"C_CLEAR, *convs);
@@ -272,7 +279,7 @@ static void	options(int ac, char **av)
 {
 	int		opt;
 
-	while ((opt = getopt(ac, av, "heq")) != -1)
+	while ((opt = getopt(ac, av, "heqfr")) != -1)
 		switch (opt)
 		{
 			case 'h':
@@ -282,6 +289,9 @@ static void	options(int ac, char **av)
 				break ;
 			case 'q':
 				quiet = true;
+				break ;
+			case 'f':
+				float_test = true;
 				break ;
 			case 'r':
 				no_speed = true;
@@ -293,6 +303,7 @@ int			main(int ac, char **av)
 {
 	static char		buff[0xF00];
 	void			*tests_handler;
+	void			*tests_float_handler;
 	void			*ftprintf_handler;
 	char			*testflags = SUPPORTED_CONVERTERS;
 	int				(*ft_printf)();
@@ -311,6 +322,8 @@ int			main(int ac, char **av)
 		ask_download_tests();
 	if (!(tests_handler = dlopen(TEST_LIB_SO, RTLD_LAZY)))
 		perror("dlopen"), exit(-1);
+	if (!(tests_float_handler = dlopen(TEST_LIB_FLOATS_SO, RTLD_LAZY)))
+		perror("dlopen"), exit(-1);
 	if (!(ftprintf_handler = dlopen(FTPRINTF_LIB_SO, RTLD_LAZY)))
 		perror("dlopen"), exit(-1);
 	if (!(ft_printf = (int (*)())dlsym(ftprintf_handler, "ft_printf")))
@@ -318,6 +331,8 @@ int			main(int ac, char **av)
 	current_format = buff;
 	if ((pthread_create(&p, NULL, timeout_thread, NULL)) == -1)
 		puts(C_ERROR"thread init failed"), exit(-1);
-	run_tests(tests_handler, ft_printf, testflags);
+	run_tests(tests_handler, ft_printf, testflags, "idDoOuUxXcCsSp");
+	if (float_test)
+		run_tests(tests_float_handler, ft_printf, testflags, "aAeEfFgG");
 	return (0);
 }
