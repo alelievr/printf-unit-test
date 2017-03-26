@@ -6,7 +6,7 @@
 /*   By: alelievr <alelievr@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/01/08 16:04:18 by alelievr          #+#    #+#             */
-/*   Updated: 2017/01/08 18:07:50 by alelievr         ###   ########.fr       */
+/*   Updated: 2017/03/26 20:12:57 by alelievr         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -40,8 +40,8 @@ static int		generateRandomFloats(long long *args, int n)
 	*args++ = 0;
 	r = NAN;
 	*args++ = LONGIFY(r);
-//	r = INFINI;
-//	*args++ = LONGIFY(r);
+	r = INFINITY;
+	*args++ = LONGIFY(r);
 	for (int i = 0; i < n; i++)
 	{
 		if (rand() % 2)

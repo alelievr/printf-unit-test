@@ -112,6 +112,21 @@ static void	sigh(int s)
 	longjmp(jmp_next_test, 1);
 }
 
+void print_mem(char *mem, size_t size);
+void print_mem(char *mem, size_t size)
+{
+	size_t	i = 0;
+
+	while (i < size)
+	{
+		if (isprint(mem[i]))
+			cout("%c", mem[i]);
+		else
+			cout("\\x%hhx", mem[i]);
+		i++;
+	}
+}
+
 static void run_test(void (*testf)(char *b, int (*)(), int *, long long, int), int (*ft_printf)(), int fd[2], long long arg)
 {
 	char		buff[0xF00];
@@ -152,19 +167,23 @@ static void run_test(void (*testf)(char *b, int (*)(), int *, long long, int), i
 		failed_tests++;
 		failed = true;
 	}
-	r = read(fd[READ], buff, sizeof(buff));
+	r = read(fd[READ], buff, sizeof(buff) - 1);
 	if (r > 0)
 	{
 		buff[r] = 0;
-		if (!memchr(buff, '\x99', (size_t)r))
+		/*cout("total readed bytes: ");
+		print_mem(buff, (size_t)r);
+		cout("\n");*/
+		if (!memmem(buff, (size_t)r, "\x99\x98\x97\x96", 4lu))
 		{
 			cout(C_ERROR"error while getting result on test: %s\n"C_CLEAR, current_format);
 			return ;
 		}
-		size_t off = (size_t)((char *)memchr(buff, '\x99', (size_t)r) - buff);
+		size_t off = (size_t)((char *)memmem(buff, (size_t)r, "\x99\x98\x97\x96", 4lu) - buff);
 		memcpy(printf_buff, buff, off);
 		printf_buff[off] = 0;
-		memcpy(ftprintf_buff, buff + off + 1, r + 1);
+		memcpy(ftprintf_buff, buff + off + 4, r + 1);
+		ftprintf_buff[off] = 0;
 		if (memcmp(printf_buff, ftprintf_buff, off))
 		{
 			if (!quiet)
@@ -199,6 +218,7 @@ static void	run_tests(void *tests_h, int (*ft_printf)(), char *convs, char *allo
 		perror("pipe"), exit(-1);
 	dup2(fd[WRITE], STDOUT_FILENO);
 	close(fd[WRITE]);
+	setbuf(stdout, NULL);
 	setlocale(LC_ALL, "");
 	while (*convs)
 	{
@@ -232,7 +252,7 @@ static void	run_tests(void *tests_h, int (*ft_printf)(), char *convs, char *allo
 			cout(C_ERROR"Failed %'i of %'i tests for convertion %c\n"C_CLEAR, failed_tests - old_failed_tests, test_count, *convs);
 		if (!no_speed)
 		{
-			cout(C_PASS"On %c convertion, your printf is %.2f times slower than system's\n"C_CLEAR, *convs, current_speed_percent);
+			cout(C_PASS"On %c convertion, your printf is %.2f times slower than system's\n"C_CLEAR, *convs, current_speed_percent * 2.);
 		}
 		convs++;
 	}
