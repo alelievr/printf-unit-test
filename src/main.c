@@ -252,7 +252,7 @@ static void	run_tests(void *tests_h, int (*ft_printf)(), char *convs, char *allo
 			cout(C_ERROR"Failed %'i of %'i tests for convertion %c\n"C_CLEAR, failed_tests - old_failed_tests, test_count, *convs);
 		if (!no_speed)
 		{
-			cout(C_PASS"On %c convertion, your printf is %.2f times slower than system's\n"C_CLEAR, *convs, current_speed_percent * 2.);
+			cout(C_PASS"On %c convertion, your printf is %.2f times slower than system's\n"C_CLEAR, *convs, current_speed_percent);
 		}
 		convs++;
 	}
