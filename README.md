@@ -14,4 +14,4 @@ make f
 
 this is a brute-force based test for printf, it will check all compilable (with -Wformat flag) printf converters and flags.
 
-current number of tested formats: 1.9M (without float converters)
+current number of tested formats: 3.4M (without float converters)
