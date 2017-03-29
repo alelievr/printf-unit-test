@@ -6,7 +6,7 @@
 #    By: alelievr <marvin@42.fr>                    +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2014/07/15 15:13:38 by alelievr          #+#    #+#              #
-#    Updated: 2017/03/29 19:57:46 by alelievr         ###   ########.fr        #
+#    Updated: 2017/03/30 00:08:28 by alelievr         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -217,6 +217,7 @@ fclean: clean
 		$(RM) $(NAME) $(LIB_FTPRINTF_SO))
 
 printf:
+	@mkdir -p $(ASSETS_DIR)
 	@make -C "$(PRINTFDIR)"
 	@cp "$(PRINTFDIR)"/$(LIB_FTPRINTF) $(ASSETS_DIR)
 	@rm -rf $(TMP_LIB_FTPRINTF)

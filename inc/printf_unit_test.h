@@ -6,7 +6,7 @@
 /*   By: alelievr <alelievr@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2016/12/23 17:46:11 by alelievr          #+#    #+#             */
-/*   Updated: 2017/03/29 20:10:28 by alelievr         ###   ########.fr       */
+/*   Updated: 2017/03/30 00:04:03 by alelievr         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,6 +27,7 @@
 
 typedef char *		string;
 typedef wchar_t *	wstring;
+typedef void *		ptr;
 
 #define LONGIFY(x) *(long long *)(void *)(&x)
 

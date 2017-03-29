@@ -224,6 +224,7 @@ generateRunTest(wstring)
 generateRunTest(wchar_t)
 generateRunTest(char)
 generateRunTest(double)
+generateRunTest(ptr)
 
 static void	run_tests(int (*ft_printf)(const char *, ...), const char *convs, const char *allowed_convs)
 {
@@ -331,8 +332,11 @@ static void InitRunTest()
 	runTestFuncs[(int)'x'] = (void *)runTest_int;
 	runTestFuncs[(int)'X'] = (void *)runTest_int;
 
+	runTestFuncs[(int)'O'] = (void *)runTest_long;
 	runTestFuncs[(int)'D'] = (void *)runTest_long;
-	runTestFuncs[(int)'D'] = (void *)runTest_long;
+	runTestFuncs[(int)'U'] = (void *)runTest_long;
+
+	runTestFuncs[(int)'p'] = (void *)runTest_ptr;
 
 	runTestFuncs[(int)'e'] = (void *)runTest_double;
 	runTestFuncs[(int)'E'] = (void *)runTest_double;
