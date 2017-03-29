@@ -6,7 +6,7 @@
 /*   By: alelievr <alelievr@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/01/08 16:04:18 by alelievr          #+#    #+#             */
-/*   Updated: 2017/03/26 20:12:57 by alelievr         ###   ########.fr       */
+/*   Updated: 2017/03/29 20:08:34 by alelievr         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,7 +15,6 @@
 #include <string.h>
 #include <wchar.h>
 #include "printf_unit_test.h"
-#define LONGIFY(x) *(long long *)(void *)(&x)
 
 static int		generateRandomInts(long long *args, int n)
 {
@@ -56,15 +55,15 @@ static int		generateRandomFloats(long long *args, int n)
 
 static int		generateRandomStrings(long long *args, int n)
 {
-	char	*r = "";
-	int		ret = 2;
+	const char	*r = "";
+	int			ret = 2;
 
 	*args++ = LONGIFY(r);
 	r = NULL;
 	*args++ = LONGIFY(r);
 	for (int i = 0; i < n; i++)
 	{
-		r = (char *[]){"#nyancta inside", "yolol !", "AAAAAAAAAAAAAAAAAAAAAAAAAA", "\x7f"}[rand() % 4];
+		r = (const char *[]){"#nyancta inside", "yolol !", "AAAAAAAAAAAAAAAAAAAAAAAAAA", "\x7f", ""}[rand() % 4];
 		*args++ = LONGIFY(r);
 		ret++;
 	}
@@ -73,7 +72,7 @@ static int		generateRandomStrings(long long *args, int n)
 
 static int		generateRandomWStrings(long long *args, int n)
 {
-	wchar_t	*r = L"";
+	const wchar_t	*r = L"";
 	int		ret = 2;
 
 	*args++ = LONGIFY(r);
@@ -81,7 +80,7 @@ static int		generateRandomWStrings(long long *args, int n)
 	*args++ = LONGIFY(r);
 	for (int i = 0; i < n; i++)
 	{
-		r = (wchar_t *[]){L"こんにちは、私はprintf単体テストです",
+		r = (const wchar_t *[]){L"こんにちは、私はprintf単体テストです",
 			L"いいえ",
 			L"最終的なフラッシュ",
 			L"(╯°□°)╯︵ ┻━┻ ",
@@ -144,7 +143,7 @@ static int		generateRandomPointers(long long *args, int n)
 	return (ret);
 }
 
-int				generate_rand_args(char conv, long long *args)
+int				generateRandArgs(char conv, long long *args)
 {
 	int		n_rand_args = 5;
 

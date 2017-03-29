@@ -6,7 +6,7 @@
 #    By: alelievr <marvin@42.fr>                    +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2014/07/15 15:13:38 by alelievr          #+#    #+#              #
-#    Updated: 2017/03/26 17:35:57 by alelievr         ###   ########.fr        #
+#    Updated: 2017/03/29 19:57:46 by alelievr         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -16,8 +16,9 @@
 
 #	Sources
 SRCDIR		=	src
-SRC			=	main.c					\
-				random_args.c			\
+SRC			=	main.cpp				\
+				random_args.cpp			\
+				source_generator.cpp	\
 
 #	Objects
 OBJDIR		=	obj
@@ -55,7 +56,7 @@ LIB_FTPRINTF=	libftprintf.a
 
 #	Compiler
 WERROR		=	-Werror
-CFLAGS		=	-Weverything -pedantic -ferror-limit=999
+CFLAGS		=	-Wall -Wextra -ferror-limit=999
 CPROTECTION	=	-z execstack -fno-stack-protector
 
 DEBUGFLAGS1	=	-O0 -ggdb
@@ -120,7 +121,7 @@ VFRAME		=	$(addprefix -framework ,$(FRAMEWORK))
 INCFILES	=	$(foreach inc, $(INCDIRS), $(wildcard $(inc)/*.h))
 CPPFLAGS	=	$(addprefix -I,$(INCDIRS))
 LDFLAGS		=	$(addprefix -L,$(LIBDIRS))
-LINKER		=	$(CC)
+LINKER		=	$(CXX)
 
 disp_indent	=	for I in `seq 1 $(MAKELEVEL)`; do \
 					test "$(MAKELEVEL)" '!=' '0' && printf "\t"; \

@@ -6,7 +6,7 @@
 /*   By: alelievr <alelievr@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2016/12/23 17:46:11 by alelievr          #+#    #+#             */
-/*   Updated: 2017/03/26 01:35:53 by alelievr         ###   ########.fr       */
+/*   Updated: 2017/03/29 20:10:28 by alelievr         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,6 +22,13 @@
 #include <string.h>
 #include <time.h>
 #include <pthread.h>
+#include <iostream>
+#include <list>
+
+typedef char *		string;
+typedef wchar_t *	wstring;
+
+#define LONGIFY(x) *(long long *)(void *)(&x)
 
 #define SUPPORTED_CONVERTERS	"idDoOuUxXcCsSpaAeEfFgG"
 #define TEST_LIB_SO				"./printf-tests.so"
@@ -37,6 +44,5 @@
 #define READ		0
 #define WRITE		1
 
-extern char *			g_current_format;
-
-int						generate_rand_args(char conv, long long *args);
+int							generateRandArgs(char conv, long long *args);
+std::list< std::string >	generateTestFormats(char conv);
