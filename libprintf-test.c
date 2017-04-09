@@ -4,7 +4,10 @@
 int		ft_printf(const char *format, ...)
 {
 	va_list		ap;
+	int			ret;
+	char		buff[0xF0000];
 
 	va_start(ap, format);
-	return vprintf(format, ap);
+	ret = vsprintf(buff, format, ap);
+	return ret;
 }

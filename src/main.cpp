@@ -90,7 +90,7 @@ static char	*arg_to_string(long long int arg)
 			break ;
 		case 'C':
 			if (arg != 0)
-				sprintf(buff, "L\'%c\'(%i)", (wchar_t)arg, (int)arg);
+				sprintf(buff, "L\'%C\'(%i)", (wchar_t)arg, (int)arg);
 			else
 				sprintf(buff, "(wchar_t)%i", (int)arg);
 			break ;
@@ -130,6 +130,23 @@ void print_mem(char *mem, size_t size)
 	}
 }
 
+static char *escapeBuff(char *str, size_t len)
+{
+	static char		tmp[0xF000];
+
+	for (size_t i = 0; i < len; i++)
+	{
+		if (!str[i])
+		{
+			tmp[i] = '\\';
+			tmp[i] = '0';
+		}
+		else
+			tmp[i] = str[i];
+	}
+	return tmp;
+}
+
 template< typename T >
 static void runTestSpec(const char *fmt, int (*ft_printf)(const char *f, ...), int fd[2], T arg)
 {
@@ -151,7 +168,7 @@ static void runTestSpec(const char *fmt, int (*ft_printf)(const char *f, ...), i
 
 	//true printf
 	d1 = printf(fmt, arg);
-	write(1, "", 1);
+	write(1, "\0\0\0\0", 4);
 
 	last_time_update = time(NULL); //for timeout
 	if ((r = read(fd[READ], printf_buff, sizeof(printf_buff) - 1)) < 0)
@@ -160,7 +177,7 @@ static void runTestSpec(const char *fmt, int (*ft_printf)(const char *f, ...), i
 	m = clock();
 
 	d2 = ft_printf(fmt, arg);
-	write(1, "", 1);
+	write(1, "\0\0\0\0", 4);
 	if ((r = read(fd[READ], ftprintf_buff, sizeof(ftprintf_buff) - 1)) < 0)
 		perror("read"), exit(-1);
 	ftprintf_buff[r] = 0;
@@ -200,7 +217,7 @@ static void runTestSpec(const char *fmt, int (*ft_printf)(const char *f, ...), i
 	if (memcmp(printf_buff, ftprintf_buff, r))
 	{
 		if (!quiet)
-			cout(C_ERROR "[ERROR] diff on output for format \"%s\" and arg: %s -> got: [%s], expected: [%s]\n" C_CLEAR, current_format, arg_to_string((long long)arg), ftprintf_buff, printf_buff);
+			cout(C_ERROR "[ERROR] diff on output for format \"%s\" and arg: %s -> got: [%s], expected: [%s]\n" C_CLEAR, current_format, arg_to_string((long long)arg), escapeBuff(ftprintf_buff, r), escapeBuff(printf_buff, r));
 		if (stop_to_first_error)
 			exit(0);
 		if (!failed)
