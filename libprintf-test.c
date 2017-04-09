@@ -8,6 +8,6 @@ int		ft_printf(const char *format, ...)
 	char		buff[0xF0000];
 
 	va_start(ap, format);
-	ret = vsprintf(buff, format, ap);
+	ret = vprintf(format, ap);
 	return ret;
 }

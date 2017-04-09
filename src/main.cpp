@@ -133,8 +133,9 @@ void print_mem(char *mem, size_t size)
 static char *escapeBuff(char *str, size_t len)
 {
 	static char		tmp[0xF000];
+	size_t			i = 0;
 
-	for (size_t i = 0; i < len; i++)
+	for (i = 0; i < len; i++)
 	{
 		if (!str[i])
 		{
@@ -144,6 +145,7 @@ static char *escapeBuff(char *str, size_t len)
 		else
 			tmp[i] = str[i];
 	}
+	tmp[i] = 0;
 	return tmp;
 }
 
