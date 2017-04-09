@@ -17,6 +17,7 @@
 #include <unistd.h>
 #include <locale.h>
 #include <ctype.h>
+#include <poll.h>
 
 static const char *	current_format;
 static int			current_index = 0;
@@ -36,6 +37,8 @@ static bool			debug = false;
 static bool			disable_timeout = false;
 
 static void	*		runTestFuncs[128];
+
+#define MAX(x, y)	((x > y) ? x : y)
 
 static void	usage() __attribute__((noreturn));
 static void	usage()
@@ -154,23 +157,22 @@ static void runTestSpec(const char *fmt, int (*ft_printf)(const char *f, ...), i
 {
 	char		printf_buff[0xF00];
 	char		ftprintf_buff[0xF00];
-	long		r;
+	long		r = 0;
 	int			d1, d2; //d1 is the printf return and d2 ft_printf return.
 	clock_t		b, m, e;
 	bool		failed;
 
 	current_arg = LONGIFY(arg);
 	current_format = fmt;
-	b = clock();
 
 	if (debug)
-	{
 		cout("format: [%s], arg: %s\n", fmt, arg_to_string((long long)arg));
-	}
 
+	b = clock();
 	//true printf
 	d1 = printf(fmt, arg);
-	write(1, "\0\0\0\0", 4);
+	fflush(stdout);
+	write(1, "", 1);
 
 	last_time_update = time(NULL); //for timeout
 	if ((r = read(fd[READ], printf_buff, sizeof(printf_buff) - 1)) < 0)
@@ -179,13 +181,14 @@ static void runTestSpec(const char *fmt, int (*ft_printf)(const char *f, ...), i
 	m = clock();
 
 	d2 = ft_printf(fmt, arg);
-	write(1, "\0\0\0\0", 4);
+	write(1, "", 1);
 	if ((r = read(fd[READ], ftprintf_buff, sizeof(ftprintf_buff) - 1)) < 0)
 		perror("read"), exit(-1);
 	ftprintf_buff[r] = 0;
 
 	e = clock();
 
+	r = MAX(r - 1, d1);
 	if (debug)
 	{
 		cout("   printf: [");
