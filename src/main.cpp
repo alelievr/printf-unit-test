@@ -133,23 +133,23 @@ void print_mem(char *mem, size_t size)
 	}
 }
 
-static char *escapeBuff(char *str, size_t len)
+static char *escapeBuff(char *str, size_t len, int buffer)
 {
-	static char		tmp[0xF000];
+	static char		tmp[2][0xF000];
 	size_t			i = 0;
 
 	for (i = 0; i < len; i++)
 	{
 		if (!str[i])
 		{
-			tmp[i] = '\\';
-			tmp[i] = '0';
+			tmp[buffer][i] = '\\';
+			tmp[buffer][i] = '0';
 		}
 		else
-			tmp[i] = str[i];
+			tmp[buffer][i] = str[i];
 	}
-	tmp[i] = 0;
-	return tmp;
+	tmp[buffer][i] = 0;
+	return tmp[buffer];
 }
 
 template< typename T >
@@ -157,7 +157,7 @@ static void runTestSpec(const char *fmt, int (*ft_printf)(const char *f, ...), i
 {
 	char		printf_buff[0xF00];
 	char		ftprintf_buff[0xF00];
-	long		r = 0;
+	long		r1 = 0, r2 = 0;
 	int			d1, d2; //d1 is the printf return and d2 ft_printf return.
 	clock_t		b, m, e;
 	bool		failed;
@@ -175,27 +175,28 @@ static void runTestSpec(const char *fmt, int (*ft_printf)(const char *f, ...), i
 	write(1, "", 1);
 
 	last_time_update = time(NULL); //for timeout
-	if ((r = read(fd[READ], printf_buff, sizeof(printf_buff) - 1)) < 0)
+	if ((r1 = read(fd[READ], printf_buff, sizeof(printf_buff) - 1)) < 0)
 		perror("read"), exit(-1);
-	printf_buff[r] = 0;
+	printf_buff[r1] = 0;
 	m = clock();
 
 	d2 = ft_printf(fmt, arg);
 	write(1, "", 1);
-	if ((r = read(fd[READ], ftprintf_buff, sizeof(ftprintf_buff) - 1)) < 0)
+	if ((r2 = read(fd[READ], ftprintf_buff, sizeof(ftprintf_buff) - 1)) < 0)
 		perror("read"), exit(-1);
-	ftprintf_buff[r] = 0;
+	ftprintf_buff[r2] = 0;
 
 	e = clock();
 
-	r = MAX(r - 1, d1);
+	long r = MAX(r1 - 1, d1);
 	if (debug)
 	{
 		cout("   printf: [");
-		print_mem(printf_buff, r);
+		print_mem(printf_buff, r1);
 		cout("]\nft_printf: [");
-		print_mem(ftprintf_buff, r);
+		print_mem(ftprintf_buff, r2);
 		cout("]\n\n");
+		cout("r = %li, r1 = %li, r2 = %li\n", r, r1, r2);
 	}
 
 	if (current_index == 0)
@@ -222,7 +223,7 @@ static void runTestSpec(const char *fmt, int (*ft_printf)(const char *f, ...), i
 	if (memcmp(printf_buff, ftprintf_buff, r))
 	{
 		if (!quiet)
-			cout(C_ERROR "[ERROR] diff on output for format \"%s\" and arg: %s -> got: [%s], expected: [%s]\n" C_CLEAR, current_format, arg_to_string((long long)arg), escapeBuff(ftprintf_buff, r), escapeBuff(printf_buff, r));
+			cout(C_ERROR "[ERROR] diff on output for format \"%s\" and arg: %s -> got: [%s], expected: [%s]\n" C_CLEAR, current_format, arg_to_string((long long)arg), escapeBuff(ftprintf_buff, r, 0), escapeBuff(printf_buff, r, 1));
 		if (stop_to_first_error)
 			exit(0);
 		if (!failed)
