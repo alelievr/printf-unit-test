@@ -19,6 +19,12 @@
 #include <ctype.h>
 #include <poll.h>
 
+const char *					C_ERROR = "\033[38;5;196m";
+const char *					C_PASS	= "\033[38;5;118m";
+const char *					C_CRASH = "\033[38;5;93m";
+const char *					C_TITLE = "\033[38;5;70m";
+const char *					C_CLEAR = "\033[0m";
+
 static const char *	current_format;
 static int			current_index = 0;
 static char			current_conv;
@@ -35,6 +41,7 @@ static bool			quiet = false;
 static bool			no_speed = false;
 static bool			debug = false;
 static bool			disable_timeout = false;
+static int			output_fd = -1;
 
 static void	*		runTestFuncs[128];
 
@@ -49,7 +56,8 @@ static void	usage()
 			"  -q: disable errer/segv/timeout output\n"
 			"  -r: disable speed test\n"
 			"  -d: debug mode\n"
-			"  -h: display help\n");
+			"  -h: display help\n"
+			"  -f <fname>: output in the specified file");
 	printf("supported converters: \"" SUPPORTED_CONVERTERS "\"");
 	exit(-1);
 }
@@ -57,13 +65,12 @@ static void	usage()
 static void	cout(const char *f, ...)
 {
 	va_list		ap;
-	static int	new_stdout = 0;
 
-	if (new_stdout == 0)
-		new_stdout = open("/dev/tty", O_RDWR);
+	if (output_fd == -1)
+		output_fd = open("/dev/tty", O_RDWR);
 
 	va_start(ap, f);
-	vdprintf(new_stdout, f, ap);
+	vdprintf(output_fd, f, ap);
 	va_end(ap);
 }
 
@@ -108,11 +115,11 @@ static void	sigh(int s) __attribute__((noreturn));
 static void	sigh(int s)
 {
 	if (!quiet)
-		cout(C_CRASH"catched signal: %s when testing format: \"%s\" with arg: %s\n", strsignal(s), current_format, arg_to_string(current_arg));
+		cout("%scatched signal: %s when testing format: \"%s\" with arg: %s%s\n", C_CRASH, strsignal(s), current_format, arg_to_string(current_arg), C_CLEAR);
 	if (stop_to_first_error)
 		exit(0);
 	if (sig_counter >= 500 && !quiet)
-		cout(C_CRASH"received too many crash signals, aborting test ...\n"), exit(-1);
+		cout("%sreceived too many crash signals, aborting test ...\n%s", C_CRASH, C_CLEAR), exit(-1);
 	sig_counter++;
 	g_current_test_index++;
 	longjmp(jmp_next_test, 1);
@@ -137,18 +144,20 @@ static char *escapeBuff(char *str, size_t len, int buffer)
 {
 	static char		tmp[2][0xF000];
 	size_t			i = 0;
+	size_t			j = 0;
 
 	for (i = 0; i < len; i++)
 	{
-		if (!str[i])
+		if (!isprint(str[i]))
 		{
-			tmp[buffer][i] = '\\';
-			tmp[buffer][i] = '0';
+			tmp[buffer][j++] = '\\';
+			tmp[buffer][j++] = (str[i] & 0xF) + '0';
+			tmp[buffer][j++] = ((str[i] >> 4) & 0xF) + '0';
 		}
 		else
-			tmp[buffer][i] = str[i];
+			tmp[buffer][j++] = str[i];
 	}
-	tmp[buffer][i] = 0;
+	tmp[buffer][j] = 0;
 	return tmp[buffer];
 }
 
@@ -213,7 +222,7 @@ static void runTestSpec(const char *fmt, int (*ft_printf)(const char *f, ...), i
 	{
 		if (!quiet)
 		{
-			cout(C_ERROR "bad return value for format \"%s\" and arg: %s -> got: %i expected %i\n" C_CLEAR, current_format, arg_to_string((long long)arg), d2, d1);
+			cout("%sbad return value for format \"%s\" and arg: %s -> got: %i expected %i\n%s", C_CRASH, current_format, arg_to_string((long long)arg), d2, d1, C_CLEAR);
 		}
 		if (stop_to_first_error)
 			exit(0);
@@ -223,7 +232,7 @@ static void runTestSpec(const char *fmt, int (*ft_printf)(const char *f, ...), i
 	if (memcmp(printf_buff, ftprintf_buff, r))
 	{
 		if (!quiet)
-			cout(C_ERROR "[ERROR] diff on output for format \"%s\" and arg: %s -> got: [%s], expected: [%s]\n" C_CLEAR, current_format, arg_to_string((long long)arg), escapeBuff(ftprintf_buff, r, 0), escapeBuff(printf_buff, r, 1));
+			cout("%s[ERROR] diff on output for format \"%s\" and arg: %s -> got: [%s], expected: [%s]\n%s", C_ERROR, current_format, arg_to_string((long long)arg), escapeBuff(ftprintf_buff, r, 0), escapeBuff(printf_buff, r, 1), C_CLEAR);
 		if (stop_to_first_error)
 			exit(0);
 		if (!failed)
@@ -273,7 +282,7 @@ static void	run_tests(int (*ft_printf)(const char *, ...), const char *convs, co
 			continue ;
 		current_conv = *convs;
 		old_failed_tests = failed_tests;
-		cout(C_TITLE "testing %%%c ...\n" C_CLEAR, *convs);
+		cout("%stesting %%%c ...\n%s", C_TITLE, *convs, C_CLEAR);
 		index = -1;
 		test_count = 0;
 		disable_timeout = true;
@@ -294,12 +303,12 @@ static void	run_tests(int (*ft_printf)(const char *, ...), const char *convs, co
 			}
 		}
 		if (failed_tests == old_failed_tests)
-			cout(C_PASS "Passed all %'i tests for convertion %c\n" C_CLEAR, test_count, *convs);
+			cout("%sPassed all %'i tests for convertion %c%s\n", C_PASS, test_count, *convs, C_CLEAR);
 		else
-			cout(C_ERROR "Failed %'i of %'i tests for convertion %c\n" C_CLEAR, failed_tests - old_failed_tests, test_count, *convs);
+			cout("%sFailed %'i of %'i tests for convertion %c\n%s", C_ERROR, failed_tests - old_failed_tests, test_count, *convs, C_CLEAR);
 		if (!no_speed)
 		{
-			cout(C_PASS "On %c convertion, your printf is %.2f times slower than system's\n" C_CLEAR, *convs, current_speed_percent);
+			cout("%sOn %c convertion, your printf is %.2f times slower than system's\n%s", C_PASS, *convs, current_speed_percent, C_CLEAR);
 		}
 		convs++;
 	}
@@ -316,7 +325,7 @@ static void	*timeout_thread(void *t)
 			last_time_update = time(NULL);
 		if (time(NULL) - last_time_update > 3) //3sec passed on ftprintf function
 		{
-			cout(C_ERROR"Timeout on format: \"%s\" with argument: %lli\n", current_format, current_arg);
+			cout("%sTimeout on format: \"%s\" with argument: %lli\n%s", C_ERROR, current_format, current_arg, C_CLEAR);
 			exit(0);
 		}
 	}
@@ -326,7 +335,7 @@ static void	options(int ac, char **av)
 {
 	int		opt;
 
-	while ((opt = getopt(ac, av, "heqdr")) != -1)
+	while ((opt = getopt(ac, av, "heqdrf:")) != -1)
 		switch (opt)
 		{
 			case 'h':
@@ -342,6 +351,14 @@ static void	options(int ac, char **av)
 				break ;
 			case 'r':
 				no_speed = true;
+				break ;
+			case 'f':
+				C_ERROR = ""; 
+				C_PASS = "";
+				C_CRASH = "";
+				C_TITLE = "";
+				C_CLEAR = "";
+				output_fd = open(optarg, O_WRONLY | O_CREAT | O_TRUNC, 0644);
 				break ;
 		}
 }
@@ -380,7 +397,7 @@ static void InitRunTest()
 int			main(int ac, char **av)
 {
 	void			*ftprintf_handler;
-	const char		*testflags = SUPPORTED_CONVERTERS;
+	const char		*testflags = DEFAULT_CONVERTERS;
 	int				(*ft_printf)(const char *, ...);
 	pthread_t		p;
 
@@ -399,7 +416,7 @@ int			main(int ac, char **av)
 	if (!(ft_printf = (int (*)(const char *, ...))dlsym(ftprintf_handler, "ft_printf")))
 		perror("dlsym"), exit(-1);
 	if ((pthread_create(&p, NULL, timeout_thread, NULL)) == -1)
-		puts(C_ERROR"thread init failed"), exit(-1);
+		printf("%sthread init failed%s", C_ERROR, C_CLEAR), exit(-1);
 	run_tests(ft_printf, testflags, SUPPORTED_CONVERTERS);
 	return (0);
 }

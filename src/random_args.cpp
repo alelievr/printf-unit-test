@@ -6,7 +6,7 @@
 /*   By: alelievr <alelievr@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/01/08 16:04:18 by alelievr          #+#    #+#             */
-/*   Updated: 2017/03/29 20:08:34 by alelievr         ###   ########.fr       */
+/*   Updated: 2017/05/31 20:37:59 by alelievr         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,6 +15,23 @@
 #include <string.h>
 #include <wchar.h>
 #include "printf_unit_test.h"
+
+static const char *	randomStrings[] = {
+	"#nyancta inside",
+	"yolol !",
+	"AAAAAAAAAAAAAAAAAAAAAAAAAA",
+	"\x7f",
+	"The Game.",
+	"I know what you are doing.",
+	"You should better not go to sleep.",
+	"Drop the keyboard and RUN!",
+	"Any invalid command will remove a random file from your home.",
+	"You will die before this tests ends.",
+	"I love the smell of bugs in the morning.",
+	"What do you want to debug today?",
+	""
+};
+static const size_t	randomStringsCount = 6;
 
 static int		generateRandomInts(long long *args, int n)
 {
@@ -63,7 +80,7 @@ static int		generateRandomStrings(long long *args, int n)
 	*args++ = LONGIFY(r);
 	for (int i = 0; i < n; i++)
 	{
-		r = (const char *[]){"#nyancta inside", "yolol !", "AAAAAAAAAAAAAAAAAAAAAAAAAA", "\x7f", ""}[rand() % 4];
+		r = randomStrings[rand() % randomStringsCount];
 		*args++ = LONGIFY(r);
 		ret++;
 	}
