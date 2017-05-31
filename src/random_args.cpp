@@ -6,7 +6,7 @@
 /*   By: alelievr <alelievr@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/01/08 16:04:18 by alelievr          #+#    #+#             */
-/*   Updated: 2017/05/31 20:37:59 by alelievr         ###   ########.fr       */
+/*   Updated: 2017/05/31 21:51:18 by alelievr         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,8 +18,6 @@
 
 static const char *	randomStrings[] = {
 	"#nyancta inside",
-	"yolol !",
-	"AAAAAAAAAAAAAAAAAAAAAAAAAA",
 	"\x7f",
 	"The Game.",
 	"I know what you are doing.",
@@ -29,9 +27,22 @@ static const char *	randomStrings[] = {
 	"You will die before this tests ends.",
 	"I love the smell of bugs in the morning.",
 	"What do you want to debug today?",
-	""
+	"rm: /: Permission denied.",
+	"Already up-to-date.",
+	":(){ :|:& };:",
+	"Do you want to print 333.5K chars? (y/N)",
+	"Try with ASAN, and be amazed",
+	"Remember that word: C H A I R",
+	"Good morning, pal *<:-)",
+	"WASTED",
+	"Too old to crash",
+	"don’t feed the bugs! (except delicious stacktraces)!",
+	"Beer in mind.",
+	"3nl4r9e y0\\/r pr1ntf",
+	"Don't do this.",
+	"No fix, no sleep",
+	"/dev/brain: No such file or directory."
 };
-static const size_t	randomStringsCount = 6;
 
 static int		generateRandomInts(long long *args, int n)
 {
@@ -70,6 +81,7 @@ static int		generateRandomFloats(long long *args, int n)
 	return (ret);
 }
 
+#include <fcntl.h>
 static int		generateRandomStrings(long long *args, int n)
 {
 	const char	*r = "";
@@ -80,7 +92,7 @@ static int		generateRandomStrings(long long *args, int n)
 	*args++ = LONGIFY(r);
 	for (int i = 0; i < n; i++)
 	{
-		r = randomStrings[rand() % randomStringsCount];
+		r = randomStrings[rand() % (sizeof(randomStrings) / sizeof(char *))];
 		*args++ = LONGIFY(r);
 		ret++;
 	}

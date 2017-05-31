@@ -57,8 +57,8 @@ static void	usage()
 			"  -r: disable speed test\n"
 			"  -d: debug mode\n"
 			"  -h: display help\n"
-			"  -f <fname>: output in the specified file");
-	printf("supported converters: \"" SUPPORTED_CONVERTERS "\"");
+			"  -f <fname>: output in the specified file\n");
+	printf("supported converters: \"" SUPPORTED_CONVERTERS "\"\n");
 	exit(-1);
 }
 
@@ -222,7 +222,7 @@ static void runTestSpec(const char *fmt, int (*ft_printf)(const char *f, ...), i
 	{
 		if (!quiet)
 		{
-			cout("%sbad return value for format \"%s\" and arg: %s -> got: %i expected %i\n%s", C_CRASH, current_format, arg_to_string((long long)arg), d2, d1, C_CLEAR);
+			cout("%sbad return value for format \"%s\" and arg: %s -> got: %i expected %i\n%s", C_ERROR, current_format, arg_to_string((long long)arg), d2, d1, C_CLEAR);
 		}
 		if (stop_to_first_error)
 			exit(0);

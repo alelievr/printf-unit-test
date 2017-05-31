@@ -41,7 +41,7 @@
 #define PRINTF_FLAGS_BASIC		NO_FLAG"#0-+ "
 #define NOALIGN					INT_MIN
 #define NOPADD					NOALIGN
-#define PRINTF_FLAGS_ADVANCED	"'L"
+#define PRINTF_FLAGS_ADVANCED	""
 
 #define CHAR_MASK	0x0000000000000FF
 #define HOST_MASK	0x00000000000FFFF
@@ -53,7 +53,7 @@
 
 #define FILE_TEMPLATE			FILE_HEADER_TEMPLATE FILE_CONTENT_TEMPLATE
 
-static const char *		rand_strings[] = {"olol", "#42#", "\\\\!/", "^.^/"};
+static const char *		rand_strings[] = {"!", "42", "\\\\!/", "^.^/", ">------------<"};
 
 static const char		flag_to_flag_incompatibilities[][2] = {
 	{' ', '+'},
