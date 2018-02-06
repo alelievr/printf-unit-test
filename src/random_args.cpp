@@ -6,7 +6,7 @@
 /*   By: alelievr <alelievr@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/01/08 16:04:18 by alelievr          #+#    #+#             */
-/*   Updated: 2017/05/31 21:51:18 by alelievr         ###   ########.fr       */
+/*   Updated: 2018/02/06 13:23:20 by alelievr         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,7 +17,7 @@
 #include "printf_unit_test.h"
 
 static const char *	randomStrings[] = {
-	"#nyancta inside",
+	"#nyancat inside",
 	"\x7f",
 	"The Game.",
 	"I know what you are doing.",
@@ -172,7 +172,7 @@ static int		generateRandomPointers(long long *args, int n)
 	return (ret);
 }
 
-int				generateRandArgs(char conv, long long *args)
+int				generateRandArgs(char conv, const char *mods, long long *args)
 {
 	int		n_rand_args = 5;
 
@@ -180,14 +180,14 @@ int				generateRandArgs(char conv, long long *args)
 		return generateRandomInts(args, n_rand_args);
 	if (strchr("aAeEfFgG", conv))
 		return generateRandomFloats(args, n_rand_args);
+	if (conv == 'S' || (conv == 's' && strchr(mods, 'l')))
+		return generateRandomWStrings(args, n_rand_args);
 	if (conv == 's')
 		return generateRandomStrings(args, n_rand_args);
-	if (conv == 'S')
-		return generateRandomWStrings(args, n_rand_args);
+	if (conv == 'C' || (conv == 'c' && strchr(mods, 'l')))
+		return generateRandomWChars(args, n_rand_args);
 	if (conv == 'c')
 		return generateRandomChars(args, n_rand_args);
-	if (conv == 'C')
-		return generateRandomWChars(args, n_rand_args);
 	if (conv == 'p')
 		return generateRandomPointers(args, n_rand_args);
 	return (0);

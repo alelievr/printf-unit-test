@@ -6,7 +6,7 @@
 #    By: alelievr <marvin@42.fr>                    +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2014/07/15 15:13:38 by alelievr          #+#    #+#              #
-#    Updated: 2017/03/30 00:08:28 by alelievr         ###   ########.fr        #
+#    Updated: 2018/02/06 12:43:01 by alelievr         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -55,7 +55,7 @@ NAME		=	run_test
 LIB_FTPRINTF=	libftprintf.a
 
 #	Compiler
-WERROR		=	-Werror
+WERROR		=	#-Werror
 CFLAGS		=	-Wall -Wextra -ferror-limit=999
 CPROTECTION	=	-z execstack -fno-stack-protector
 

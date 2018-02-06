@@ -40,6 +40,7 @@ static double		current_speed_percent = 1.;
 static bool			quiet = false;
 static bool			no_speed = false;
 static bool			debug = false;
+static bool			verbose = false;
 static bool			disable_timeout = false;
 static int			output_fd = -1;
 
@@ -56,6 +57,7 @@ static void	usage()
 			"  -q: disable errer/segv/timeout output\n"
 			"  -r: disable speed test\n"
 			"  -d: debug mode\n"
+			"  -v: verbose (debug mode but only for failed tests)\n"
 			"  -h: display help\n"
 			"  -f <fname>: output in the specified file\n");
 	printf("supported converters: \"" SUPPORTED_CONVERTERS "\"\n");
@@ -240,6 +242,17 @@ static void runTestSpec(const char *fmt, int (*ft_printf)(const char *f, ...), i
 	}
 	else
 		passed_tests++;
+
+	if (verbose && failed)
+	{
+		cout("   printf: [");
+		print_mem(printf_buff, r1);
+		cout("]\nft_printf: [");
+		print_mem(ftprintf_buff, r2);
+		cout("]\n\n");
+		cout("r = %li, r1 = %li, r2 = %li\n", r, r1, r2);
+	}
+
 	//split and diff the results
 	(void)index;
 }
@@ -292,12 +305,17 @@ static void	run_tests(int (*ft_printf)(const char *, ...), const char *convs, co
 		{
 			index++;
 			current_index = index;
-			argc = generateRandArgs(*convs, args);
+			argc = generateRandArgs(*convs, fmt.c_str(), args);
 			g_current_test_index = -1;
 			setjmp(jmp_next_test);
 			while (++g_current_test_index < argc)
 			{
-				((void (*)(const char *, int (*)(const char *, ...), int[2], ...))runTestFuncs[(int)*convs])(fmt.c_str(), ft_printf, fd, args[g_current_test_index]);
+				int convIndex = (int)*convs;
+				if (*convs == 'c' && fmt.find('l') != std::string::npos)
+					convIndex = 'C';
+				if (*convs == 's' && fmt.find('l') != std::string::npos)
+					convIndex = 'S';
+				((void (*)(const char *, int (*)(const char *, ...), int[2], ...))runTestFuncs[convIndex])(fmt.c_str(), ft_printf, fd, args[g_current_test_index]);
 				total_test_count++;
 				test_count++;
 			}
@@ -335,7 +353,7 @@ static void	options(int ac, char **av)
 {
 	int		opt;
 
-	while ((opt = getopt(ac, av, "heqdrf:")) != -1)
+	while ((opt = getopt(ac, av, "vheqdrf:")) != -1)
 		switch (opt)
 		{
 			case 'h':
@@ -351,6 +369,9 @@ static void	options(int ac, char **av)
 				break ;
 			case 'r':
 				no_speed = true;
+				break ;
+			case 'v':
+				verbose = true;
 				break ;
 			case 'f':
 				C_ERROR = ""; 

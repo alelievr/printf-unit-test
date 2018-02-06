@@ -6,7 +6,7 @@
 /*   By: alelievr <alelievr@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2016/12/23 17:46:11 by alelievr          #+#    #+#             */
-/*   Updated: 2017/05/31 21:13:04 by alelievr         ###   ########.fr       */
+/*   Updated: 2018/02/06 13:22:02 by alelievr         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -40,5 +40,5 @@ typedef void *		ptr;
 #define READ		0
 #define WRITE		1
 
-int							generateRandArgs(char conv, long long *args);
+int							generateRandArgs(char conv, const char *mods, long long *args);
 std::list< std::string >	generateTestFormats(char conv);
