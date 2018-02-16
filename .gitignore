@@ -1,6 +1,7 @@
 *.o
 *.a
 *~
+*.so
 obj/
 a.out
 assets/tmp

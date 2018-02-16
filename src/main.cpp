@@ -193,6 +193,15 @@ static char *escapeBuff(char *str, size_t len, int buffer)
 	return tmp[buffer];
 }
 
+static long long longify(void *addr, size_t length)
+{
+	long long	ret = 0;
+
+	memcpy(&ret, addr, length);
+
+	return ret;
+}
+
 template< typename T >
 static void runTestSpec(const char *fmt, int (*ft_printf)(const char *f, ...), int fd[2], T arg)
 {
@@ -203,7 +212,7 @@ static void runTestSpec(const char *fmt, int (*ft_printf)(const char *f, ...), i
 	clock_t		b, m, e;
 	bool		failed;
 
-	current_arg = LONGIFY(arg);
+	current_arg = longify((void *)&arg, sizeof(T));
 	current_format = fmt;
 
 	if (debug)

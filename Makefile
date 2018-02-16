@@ -6,7 +6,7 @@
 #    By: alelievr <marvin@42.fr>                    +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2014/07/15 15:13:38 by alelievr          #+#    #+#              #
-#    Updated: 2018/02/06 12:43:01 by alelievr         ###   ########.fr        #
+#    Updated: 2018/02/16 19:03:01 by alelievr         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -60,7 +60,7 @@ CFLAGS		=	-Wall -Wextra -ferror-limit=999
 CPROTECTION	=	-z execstack -fno-stack-protector
 
 DEBUGFLAGS1	=	-O0 -ggdb
-DEBUGFLAGS2	=	-fsanitize=address -fno-omit-frame-pointer -fno-optimize-sibling-calls -O0
+DEBUGFLAGS2	=	-fsanitize=address
 OPTFLAGS1	=	-funroll-loops -O2
 OPTFLAGS2	=	-pipe -funroll-loops -Ofast
 
@@ -139,7 +139,7 @@ endif
 ifneq ($(filter 2,$(strip $(DEBUGLEVEL)) ${DEBUG}),)
 	OPTLEVEL = 0
 	OPTI = 0
-	DEBUGFLAGS += $(DEBUGFLAGS1)
+	DEBUGFLAGS += $(DEBUGFLAGS1) $(DEBUGFLAGS2)
 	LINKDEBUG += $(DEBUGFLAGS1) $(DEBUGFLAGS2)
 	export ASAN_OPTIONS=check_initialization_order=1
 endif
