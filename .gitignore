@@ -3,6 +3,8 @@
 *~
 *.so
 obj/
+*.dSYM/
+*.out.*
 a.out
 assets/tmp
 run_test

@@ -6,7 +6,7 @@
 #    By: alelievr <marvin@42.fr>                    +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2014/07/15 15:13:38 by alelievr          #+#    #+#              #
-#    Updated: 2018/02/16 19:03:01 by alelievr         ###   ########.fr        #
+#    Updated: 2018/02/16 19:10:35 by alelievr         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -59,7 +59,7 @@ WERROR		=	#-Werror
 CFLAGS		=	-Wall -Wextra -ferror-limit=999
 CPROTECTION	=	-z execstack -fno-stack-protector
 
-DEBUGFLAGS1	=	-O0 -ggdb
+DEBUGFLAGS1	=	-O2 -ggdb
 DEBUGFLAGS2	=	-fsanitize=address
 OPTFLAGS1	=	-funroll-loops -O2
 OPTFLAGS2	=	-pipe -funroll-loops -Ofast

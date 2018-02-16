@@ -65,11 +65,6 @@ static void	usage()
 	exit(-1);
 }
 
-static void cout_args(int fd, const char *f, va_list list)
-{
-	vdprintf(fd, f, list);
-}
-
 static void	cout(const char *f, ...)
 {
 	va_list		ap;
@@ -78,7 +73,7 @@ static void	cout(const char *f, ...)
 		output_fd = open("/dev/tty", O_RDWR);
 
 	va_start(ap, f);
-	cout_args(output_fd, f, ap);
+	vdprintf(output_fd, f, ap);
 	va_end(ap);
 }
 
@@ -90,11 +85,11 @@ static void coutl2(const char *color, const char *f, ...)
 		output_fd = open("/dev/tty", O_RDWR);
 	
 	va_start(ap, f);
-	cout_args(logfile_fd, f, ap);
+	vdprintf(logfile_fd, f, ap);
 	va_end(ap);
 	va_start(ap, f);
 	cout(color);
-	cout_args(output_fd, f, ap);
+	vdprintf(output_fd, f, ap);
 	cout(C_CLEAR);
 	va_end(ap);
 }
@@ -360,12 +355,12 @@ static void	run_tests(int (*ft_printf)(const char *, ...), const char *convs, co
 			}
 		}
 		if (failed_tests == old_failed_tests)
-			coutl2(C_PASS, "Passed all %'i tests for convertion %c%s\n", test_count, *convs);
+			coutl2(C_PASS, "Passed all %'i tests for convertion %c\n", test_count, *convs);
 		else
-			coutl2(C_ERROR, "Failed %'i of %'i tests for convertion %c\n%s", failed_tests - old_failed_tests, test_count, *convs, C_CLEAR);
+			coutl2(C_ERROR, "Failed %'i of %'i tests for convertion %c\n", failed_tests - old_failed_tests, test_count, *convs);
 		if (!no_speed)
 		{
-			coutl2(C_PASS, "On %c convertion, your printf is %.2f times slower than system's\n%s", *convs, current_speed_percent, C_CLEAR);
+			coutl2(C_PASS, "On %c convertion, your printf is %.2f times slower than system's\n", *convs, current_speed_percent);
 		}
 		convs++;
 	}
