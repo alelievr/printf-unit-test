@@ -6,7 +6,7 @@
 /*   By: alelievr <alelievr@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2016/12/23 17:46:11 by alelievr          #+#    #+#             */
-/*   Updated: 2018/02/06 13:22:02 by alelievr         ###   ########.fr       */
+/*   Updated: 2018/02/06 14:52:15 by alelievr         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,6 +36,7 @@ typedef void *		ptr;
 #define TEST_LIB_SO				"./printf-tests.so"
 #define TEST_LIB_FLOATS_SO		"./printf-tests-floats.so"
 #define FTPRINTF_LIB_SO			"./libftprintf.so"
+#define LOG_FILE				"./result.log"
 
 #define READ		0
 #define WRITE		1

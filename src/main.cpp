@@ -43,6 +43,7 @@ static bool			debug = false;
 static bool			verbose = false;
 static bool			disable_timeout = false;
 static int			output_fd = -1;
+static int			logfile_fd = -1;
 
 static void	*		runTestFuncs[128];
 
@@ -64,6 +65,11 @@ static void	usage()
 	exit(-1);
 }
 
+static void cout_args(int fd, const char *f, va_list list)
+{
+	vdprintf(fd, f, list);
+}
+
 static void	cout(const char *f, ...)
 {
 	va_list		ap;
@@ -72,7 +78,24 @@ static void	cout(const char *f, ...)
 		output_fd = open("/dev/tty", O_RDWR);
 
 	va_start(ap, f);
-	vdprintf(output_fd, f, ap);
+	cout_args(output_fd, f, ap);
+	va_end(ap);
+}
+
+static void coutl2(const char *color, const char *f, ...)
+{
+	va_list		ap;
+
+	if (output_fd == -1)
+		output_fd = open("/dev/tty", O_RDWR);
+	
+	va_start(ap, f);
+	cout_args(logfile_fd, f, ap);
+	va_end(ap);
+	va_start(ap, f);
+	cout(color);
+	cout_args(output_fd, f, ap);
+	cout(C_CLEAR);
 	va_end(ap);
 }
 
@@ -89,7 +112,10 @@ static char	*arg_to_string(long long int arg)
 			sprintf(buff, "%p", (void *)arg);
 			break ;
 		case 's':
-			sprintf(buff, "\"%s\"", (char *)arg);
+			if (strchr(current_format, 'l') != NULL)
+				sprintf(buff, "L\"%S\"", (wchar_t *)arg);
+			else
+				sprintf(buff, "\"%s\"", (char *)arg);
 			break ;
 		case 'S':
 			sprintf(buff, "L\"%S\"", (wchar_t *)arg);
@@ -152,9 +178,13 @@ static char *escapeBuff(char *str, size_t len, int buffer)
 	{
 		if (!isprint(str[i]))
 		{
+			char	b1 = (str[i] & 0xF);
+			char	b2 = ((str[i] >> 4) & 0xF);
+
 			tmp[buffer][j++] = '\\';
-			tmp[buffer][j++] = (str[i] & 0xF) + '0';
-			tmp[buffer][j++] = ((str[i] >> 4) & 0xF) + '0';
+			tmp[buffer][j++] = 'x';
+			tmp[buffer][j++] = (b1 > 9) ? b1 + '&' : b1 + '0';
+			tmp[buffer][j++] = (b2 > 9) ? b2 + '&' : b2 + '0';
 		}
 		else
 			tmp[buffer][j++] = str[i];
@@ -234,7 +264,7 @@ static void runTestSpec(const char *fmt, int (*ft_printf)(const char *f, ...), i
 	if (memcmp(printf_buff, ftprintf_buff, r))
 	{
 		if (!quiet)
-			cout("%s[ERROR] diff on output for format \"%s\" and arg: %s -> got: [%s], expected: [%s]\n%s", C_ERROR, current_format, arg_to_string((long long)arg), escapeBuff(ftprintf_buff, r, 0), escapeBuff(printf_buff, r, 1), C_CLEAR);
+			cout("%s[ERROR] diff on output for format \"%s\" and arg: %s\nexpected: [%s]\n     got: [%s]\n%s", C_ERROR, current_format, arg_to_string((long long)arg), escapeBuff(printf_buff, r, 0), escapeBuff(ftprintf_buff, r, 1), C_CLEAR);
 		if (stop_to_first_error)
 			exit(0);
 		if (!failed)
@@ -321,16 +351,16 @@ static void	run_tests(int (*ft_printf)(const char *, ...), const char *convs, co
 			}
 		}
 		if (failed_tests == old_failed_tests)
-			cout("%sPassed all %'i tests for convertion %c%s\n", C_PASS, test_count, *convs, C_CLEAR);
+			coutl2(C_PASS, "Passed all %'i tests for convertion %c%s\n", test_count, *convs);
 		else
-			cout("%sFailed %'i of %'i tests for convertion %c\n%s", C_ERROR, failed_tests - old_failed_tests, test_count, *convs, C_CLEAR);
+			coutl2(C_ERROR, "Failed %'i of %'i tests for convertion %c\n%s", failed_tests - old_failed_tests, test_count, *convs, C_CLEAR);
 		if (!no_speed)
 		{
-			cout("%sOn %c convertion, your printf is %.2f times slower than system's\n%s", C_PASS, *convs, current_speed_percent, C_CLEAR);
+			coutl2(C_PASS, "On %c convertion, your printf is %.2f times slower than system's\n%s", *convs, current_speed_percent, C_CLEAR);
 		}
 		convs++;
 	}
-	cout("tested format count: %i\n", total_test_count);
+	coutl2(C_CLEAR, "Total tested format count: %i\n", total_test_count);
 }
 
 static void	*timeout_thread(void *t)
@@ -343,7 +373,7 @@ static void	*timeout_thread(void *t)
 			last_time_update = time(NULL);
 		if (time(NULL) - last_time_update > 3) //3sec passed on ftprintf function
 		{
-			cout("%sTimeout on format: \"%s\" with argument: %lli\n%s", C_ERROR, current_format, current_arg, C_CLEAR);
+			cout("%sTimeout on format: \"%s\" with argument: %lli\n%s", C_ERROR, current_format, arg_to_string(current_arg), C_CLEAR);
 			exit(0);
 		}
 	}
@@ -427,6 +457,8 @@ int			main(int ac, char **av)
 	av += optind;
 	if (ac == 1)
 		testflags = av[0];
+
+	logfile_fd = open(LOG_FILE, O_WRONLY | O_TRUNC | O_CREAT, 0644);
 
 	InitRunTest();
 	signal(SIGSEGV, sigh);
