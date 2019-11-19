@@ -6,7 +6,7 @@
 /*   By: alelievr <alelievr@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created  2016/12/23 17:42:25 by alelievr          #+#    #+#             */
-//   Updated: 2019/11/19 14:18:06 by juligonz         ###   ########.fr       //
+//   Updated: 2019/11/19 15:03:57 by juligonz         ###   ########.fr       //
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -432,6 +432,9 @@ static void InitRunTest()
 	runTestFuncs[(int)'g'] = (void *)runTest_double;
 	runTestFuncs[(int)'e'] = (void *)runTest_double;
 
+	(void)runTest_long;
+	(void)runTest_wchar_t;
+	(void)runTest_wstring;
 //	runTestFuncs[(int)'O'] = (void *)runTest_long;
 //	runTestFuncs[(int)'D'] = (void *)runTest_long;
 //	runTestFuncs[(int)'U'] = (void *)runTest_long;
