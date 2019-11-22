@@ -6,7 +6,7 @@
 /*   By: alelievr <alelievr@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2016/12/23 17:46:11 by alelievr          #+#    #+#             */
-/*   Updated: 2018/02/16 19:06:45 by alelievr         ###   ########.fr       */
+/*   Updated: 2019/11/19 14:50:57 by juligonz         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,8 +31,11 @@ typedef void *		ptr;
 
 #define LONGIFY(x) *(long long *)(void *)(&x)
 
-#define SUPPORTED_CONVERTERS	"idDoOuUxXcCsSpaAeEfFgG"
-#define DEFAULT_CONVERTERS		"idDoOuUxXcCsSp"
+//#define SUPPORTED_CONVERTERS	"idDoOuUxXcCsSpaAeEfFgG"
+//#define DEFAULT_CONVERTERS		"idDoOuUxXcCsSp"
+
+#define SUPPORTED_CONVERTERS	"cspdiuxX"
+#define DEFAULT_CONVERTERS		"cspdiuxXfge"
 #define TEST_LIB_SO				"./printf-tests.so"
 #define TEST_LIB_FLOATS_SO		"./printf-tests-floats.so"
 #define FTPRINTF_LIB_SO			"./libftprintf.so"

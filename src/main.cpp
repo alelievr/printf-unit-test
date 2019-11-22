@@ -6,7 +6,7 @@
 /*   By: alelievr <alelievr@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created  2016/12/23 17:42:25 by alelievr          #+#    #+#             */
-/*   Updated  2016/12/23 17:42:25 by alelievr         ###   ########.fr       */
+//   Updated: 2019/11/19 15:03:57 by juligonz         ###   ########.fr       //
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -420,33 +420,35 @@ static void	options(int ac, char **av)
 
 static void InitRunTest()
 {
+	runTestFuncs[(int)'c'] = (void *)runTest_char;
+	runTestFuncs[(int)'s'] = (void *)runTest_string;
+	runTestFuncs[(int)'p'] = (void *)runTest_ptr;
 	runTestFuncs[(int)'d'] = (void *)runTest_int;
 	runTestFuncs[(int)'i'] = (void *)runTest_int;
-	runTestFuncs[(int)'o'] = (void *)runTest_int;
 	runTestFuncs[(int)'u'] = (void *)runTest_int;
 	runTestFuncs[(int)'x'] = (void *)runTest_int;
 	runTestFuncs[(int)'X'] = (void *)runTest_int;
-
-	runTestFuncs[(int)'O'] = (void *)runTest_long;
-	runTestFuncs[(int)'D'] = (void *)runTest_long;
-	runTestFuncs[(int)'U'] = (void *)runTest_long;
-
-	runTestFuncs[(int)'p'] = (void *)runTest_ptr;
-
-	runTestFuncs[(int)'e'] = (void *)runTest_double;
-	runTestFuncs[(int)'E'] = (void *)runTest_double;
 	runTestFuncs[(int)'f'] = (void *)runTest_double;
-	runTestFuncs[(int)'F'] = (void *)runTest_double;
 	runTestFuncs[(int)'g'] = (void *)runTest_double;
-	runTestFuncs[(int)'G'] = (void *)runTest_double;
-	runTestFuncs[(int)'a'] = (void *)runTest_double;
-	runTestFuncs[(int)'A'] = (void *)runTest_double;
+	runTestFuncs[(int)'e'] = (void *)runTest_double;
 
-	runTestFuncs[(int)'C'] = (void *)runTest_wchar_t;
-	runTestFuncs[(int)'c'] = (void *)runTest_char;
+	(void)runTest_long;
+	(void)runTest_wchar_t;
+	(void)runTest_wstring;
+//	runTestFuncs[(int)'O'] = (void *)runTest_long;
+//	runTestFuncs[(int)'D'] = (void *)runTest_long;
+//	runTestFuncs[(int)'U'] = (void *)runTest_long;
 
-	runTestFuncs[(int)'S'] = (void *)runTest_wstring;
-	runTestFuncs[(int)'s'] = (void *)runTest_string;
+
+//	runTestFuncs[(int)'E'] = (void *)runTest_double;
+//	runTestFuncs[(int)'F'] = (void *)runTest_double;
+//	runTestFuncs[(int)'G'] = (void *)runTest_double;
+//	runTestFuncs[(int)'a'] = (void *)runTest_double;
+//	runTestFuncs[(int)'A'] = (void *)runTest_double;
+
+//	runTestFuncs[(int)'C'] = (void *)runTest_wchar_t;
+//	runTestFuncs[(int)'S'] = (void *)runTest_wstring;
+//	runTestFuncs[(int)'o'] = (void *)runTest_int;
 }
 
 int			main(int ac, char **av)
