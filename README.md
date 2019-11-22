@@ -1,5 +1,7 @@
 # printf-unit-test
 
+> :warning: **Important note: this version targets the new 42 subject of `printf`, if you want to use the old one [you can access it on the old branch](https://github.com/alelievr/printf-unit-test/tree/old).**
+
 ## Install
 
 clone or download this repo and place it in the parent folder of your ft_printf dir.
