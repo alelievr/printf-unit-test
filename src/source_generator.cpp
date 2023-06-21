@@ -1,12 +1,12 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   source-generator.cpp                               :+:      :+:    :+:   */
+/*   source_generator.cpp                               :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: alelievr <alelievr@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created  2016/12/22 16:20:34 by alelievr          #+#    #+#             */
-//   Updated: 2019/11/19 14:42:29 by juligonz         ###   ########.fr       //
+/*   Updated: 2023/06/21 17:22:36 by OrioPrisc        ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -49,7 +49,7 @@ static std::list< std::string >		generateModifiers(char convertion)
 	std::list< std::string >		mods;
 
 	mods.push_back("");
-	if (strchr("aAeEfFgGcs", convertion))
+	if (strchr("aAeEfFgG", convertion))
 		mods.push_back("l");
 	if (strchr("idouxXDOU", convertion))
 	{
