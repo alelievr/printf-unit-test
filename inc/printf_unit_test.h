@@ -6,7 +6,7 @@
 /*   By: alelievr <alelievr@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2016/12/23 17:46:11 by alelievr          #+#    #+#             */
-/*   Updated: 2019/11/19 14:50:57 by juligonz         ###   ########.fr       */
+/*   Updated: 2023/06/21 18:25:46 by OrioPrisc        ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,7 +35,7 @@ typedef void *		ptr;
 //#define DEFAULT_CONVERTERS		"idDoOuUxXcCsSp"
 
 #define SUPPORTED_CONVERTERS	"cspdiuxX"
-#define DEFAULT_CONVERTERS		"cspdiuxXfge"
+#define DEFAULT_CONVERTERS		"cspdiuxX"
 #define TEST_LIB_SO				"./printf-tests.so"
 #define TEST_LIB_FLOATS_SO		"./printf-tests-floats.so"
 #define FTPRINTF_LIB_SO			"./libftprintf.so"
